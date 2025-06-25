@@ -8,3 +8,7 @@ def home(request):
         'current_time': datetime.now().strftime("%B %d, %Y at %I:%M %p")
     }
     return render(request, 'app/home.html', context)
+
+
+def upload_page(request):
+    return render(request, 'app/upload.html')

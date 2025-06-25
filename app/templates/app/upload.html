@@ -1,0 +1,728 @@
+{% extends 'app/base.html' %}
+
+{% block title %}Upload Document - CheatInSights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .upload-area {
+        border: 2px dashed var(--primary-color);
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        background-color: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+        background-color: #e9ecef;
+        border-color: var(--secondary-color);
+    }
+
+    .upload-area.dragover {
+        background-color: #e9ecef;
+        border-color: var(--secondary-color);
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1rem;
+    }
+
+    .upload-progress {
+        display: none;
+        margin-top: 1rem;
+    }
+
+    #results {
+        display: none;
+        margin-top: 2rem;
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-5">
+    <div class="col">
+        <div class="text-center mb-5">
+            <h1 class="display-5 fw-bold">Upload Documents</h1>
+            <p class="lead text-muted">Upload multiple .docx files to begin analysis</p>
+        </div>
+
+        <form method="post" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <div class="upload-area" id="dropZone">
+                <div class="upload-icon">
+                    <i class="fas fa-file-upload"></i>
+                </div>
+                <h3 class="h4 mb-3">Drag & Drop your files here</h3>
+                <p class="text-muted mb-3">or</p>
+                <input type="file" name="documents" id="fileInput" class="file-input" accept=".docx" multiple>
+                <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                    Choose Files
+                </button>
+                <p class="text-muted mt-3" id="fileInfo">No files chosen</p>
+            </div>
+
+            <div class="file-list" id="fileList" style="display: none;">
+                <h6 class="mb-2">Selected Files:</h6>
+                <div id="fileItems"></div>
+            </div>
+
+            <div class="upload-progress" id="uploadProgress">
+                <div class="progress">
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                        style="width: 0%"></div>
+                </div>
+                <p class="text-center mt-2" id="uploadStatus">Uploading...</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary btn-lg px-5" id="uploadButton" disabled>
+                    Upload and Analyze All Files
+                </button>
+            </div>
+        </form>
+
+        <div id="results">
+            <div class="document-controls">
+                <h2 class="h4 mb-3">Document Analysis</h2>
+                <div class="legend" id="rsidLegend"></div>
+            </div>
+            
+            <div class="document-tabs" id="documentTabs"></div>
+            
+            <div class="container">
+                <div class="row">
+                    <div class="col-7 reconstructed-document" id="reconstructedDocument"></div>
+                    <div class="col-3 utility-bar" style="border: solid 2px grey">
+                        <h5 class="mt-2 mb-3">Utility Bar</h5>
+
+                        <div class="row"> Selected RSID</div>
+                        <div class="row" id="selected_RSID" style="height: 20px; border: solid 2px grey; margin-left: 7px; margin-right: 7px"></div>
+                        <div class="row"> Selected colour</div>
+                        <div class="row">
+                            <div class="col">
+                                <input type="color" id="rsid_color" name="rsid_color" value="#ff0000">
+                            </div>
+                            <div class="col">
+                                <button type="button"  class="w-100" onclick="changeColourRsid()">Change Colour</button>
+                            </div>
+                        </div>
+                        <div class="col mb-1">
+                            <button type="button"  class="w-100" onclick="selected_rsid_toggle_hidden()">Toggle hide this</button>
+                        </div>
+
+                        <div style="display: flex; flex-direction: row; justify-content: space-between;">
+                            <button type="button" style="width: 48%" onclick="hideAllRuns()">Hide all</button>
+                            <button type="button" style="width: 48%" onclick="unhideAllRuns()">Unhide all</button>
+                        </div>
+
+                        <!-- Add RSID List Section -->
+                        <div class="mt-4">
+                            <h6 class="mb-2">Document RSIDs</h6>
+                            <div class="rsid-list" id="rsidList" style="max-height: 300px; overflow-y: auto;">
+                                <div class="rsid-stats mb-2" id="rsidStats"></div>
+                                <div class="rsid-table">
+                                    <table class="table table-sm table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>RSID</th>
+                                                <th>Sources</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="rsidTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Add Metadata Section -->
+                        <div class="mt-4">
+                            <h6 class="mb-2">Document Metadata</h6>
+                            <div class="metadata-list" id="metadataList" style="max-height: 300px; overflow-y: auto;">
+                                <!-- Content generated by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Shared RSIDs Section -->
+                        <div id="sharedRsidsSection" class="shared-rsids-section" style="display:none;">
+                            <h3>Shared RSIDs Across Documents</h3>
+                            <div id="sharedRsidsContent"></div>
+                        </div>
+
+                        
+
+                        <div class="mt-4" id="pdf">
+                            <button type="button" class="btn btn-success w-100" onclick="pdfChangeStyle()">Download
+                                PDF</button>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileList = document.getElementById('fileList');
+    const fileItems = document.getElementById('fileItems');
+    const uploadButton = document.getElementById('uploadButton');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const progressBar = document.querySelector('.progress-bar');
+    const uploadStatus = document.getElementById('uploadStatus');
+    const results = document.getElementById('results');
+    const reconstructedDocument = document.getElementById('reconstructedDocument');
+    const rsidLegend = document.getElementById('rsidLegend');
+    const selectedRSID = document.getElementById('selected_RSID');
+    const selectedColour = document.getElementById('rsid_color');
+    const documentTabs = document.getElementById('documentTabs');
+
+    let selectedFiles = [];
+    let documentResults = {};
+
+    // Prevent default drag behaviors
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, preventDefaults, false);
+        document.body.addEventListener(eventName, preventDefaults, false);
+    });
+
+    // Highlight drop zone when item is dragged over it
+    ['dragenter', 'dragover'].forEach(eventName => {
+        dropZone.addEventListener(eventName, highlight, false);
+    });
+
+    ['dragleave', 'drop'].forEach(eventName => {
+        dropZone.addEventListener(eventName, unhighlight, false);
+    });
+
+    // Handle dropped files
+    dropZone.addEventListener('drop', handleDrop, false);
+
+    function preventDefaults(e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
+
+    function highlight(e) {
+        dropZone.classList.add('dragover');
+    }
+
+    function unhighlight(e) {
+        dropZone.classList.remove('dragover');
+    }
+
+    function handleDrop(e) {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        handleFiles(files);
+    }
+
+    function handleFiles(files) {
+        const docxFiles = Array.from(files).filter(file => file.name.endsWith('.docx'));
+        if (docxFiles.length > 0) {
+            addFiles(docxFiles);
+        } else {
+            alert('Please upload .docx files');
+        }
+    }
+
+    function addFiles(files) {
+        files.forEach(file => {
+            if (!selectedFiles.find(f => f.name === file.name)) {
+                selectedFiles.push(file);
+            }
+        });
+        updateFileList();
+        updateFileInfo();
+    }
+
+    function removeFile(fileName) {
+        selectedFiles = selectedFiles.filter(file => file.name !== fileName);
+        updateFileList();
+        updateFileInfo();
+    }
+
+    function updateFileList() {
+        if (selectedFiles.length === 0) {
+            fileList.style.display = 'none';
+            return;
+        }
+
+        fileList.style.display = 'block';
+        fileItems.innerHTML = '';
+
+        selectedFiles.forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'file-item';
+            fileItem.innerHTML = `
+                <span class="file-name">${file.name}</span>
+                <span class="file-size">${formatFileSize(file.size)}</span>
+                <button type="button" class="remove-file" onclick="removeFile('${file.name}')">Remove</button>
+            `;
+            fileItems.appendChild(fileItem);
+        });
+    }
+
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    function updateFileInfo() {
+        if (selectedFiles.length === 0) {
+            fileInfo.textContent = 'No files chosen';
+            uploadButton.disabled = true;
+        } else if (selectedFiles.length === 1) {
+            fileInfo.textContent = `Selected file: ${selectedFiles[0].name}`;
+            uploadButton.disabled = false;
+        } else {
+            fileInfo.textContent = `Selected ${selectedFiles.length} files`;
+            uploadButton.disabled = false;
+        }
+    }
+
+    function createLegend(rsidColors) {
+        rsidLegend.innerHTML = '';
+        Object.entries(rsidColors).forEach(([rsid, color]) => {
+            const legendItem = document.createElement('div');
+            legendItem.className = 'legend-item';
+            legendItem.innerHTML = `
+                <div class="legend-color" style="background-color: ${color}"></div>
+                <span>RSID: ${rsid}</span>
+            `;
+            rsidLegend.appendChild(legendItem);
+        });
+    }
+
+    function createDocumentTabs() {
+        documentTabs.innerHTML = '';
+        Object.keys(documentResults).forEach((fileName, index) => {
+            const tab = document.createElement('a');
+            tab.href = '#';
+            tab.className = `document-tab ${index === 0 ? 'active' : ''}`;
+            tab.textContent = fileName;
+            tab.onclick = (e) => {
+                e.preventDefault();
+                switchDocument(fileName);
+            };
+            documentTabs.appendChild(tab);
+        });
+    }
+
+    function switchDocument(fileName) {
+        // Update active tab
+        document.querySelectorAll('.document-tab').forEach(tab => {
+            tab.classList.remove('active');
+        });
+        event.target.classList.add('active');
+
+        // Display selected document
+        displayDocument(fileName);
+    }
+
+    function displayDocument(fileName) {
+        const result = documentResults[fileName];
+        if (result && result.html) {
+            // Extract the style section from the HTML
+            const styleMatch = result.html.match(/<style>([\s\S]*?)<\/style>/);
+            if (styleMatch) {
+                // Remove existing styles for this document
+                const existingStyle = document.querySelector(`style[data-document="${fileName}"]`);
+                if (existingStyle) {
+                    existingStyle.remove();
+                }
+                
+                // Add the styles to the document
+                const styleSheet = document.createElement('style');
+                styleSheet.setAttribute('data-document', fileName);
+                styleSheet.textContent = styleMatch[1];
+                document.head.appendChild(styleSheet);
+            }
+
+            // Extract the body content
+            const bodyMatch = result.html.match(/<body>([\s\S]*?)<\/body>/);
+            if (bodyMatch) {
+                reconstructedDocument.innerHTML = bodyMatch[1];
+                attachRunListeners();
+            }
+
+            // Create legend from the data
+            const rsidColors = {};
+            result.data.forEach(para => {
+                para.runs.forEach(run => {
+                    if (run.rsid) {
+                        const runElement = reconstructedDocument.querySelector(`[data-rsid="${run.rsid}"]`);
+                        if (runElement) {
+                            const color = window.getComputedStyle(runElement).backgroundColor;
+                            rsidColors[run.rsid] = color;
+                        }
+                    }
+                });
+            });
+            createLegend(rsidColors);
+
+            // Display RSID information from settings.xml
+            if (result.settings_rsids) {
+                displayRsidList(result.settings_rsids);
+            }
+
+            // Display metadata
+            if (result.metadata) {
+                displayMetadata(result.metadata);
+            }
+        }
+    }
+
+    function displayMetadata(metadata) {
+        const metadataList = document.getElementById('metadataList');
+        metadataList.innerHTML = '';
+
+        // Helper to create a section
+        function createSection(title, dataObj) {
+            if (!dataObj || Object.keys(dataObj).length === 0) return null;
+            const section = document.createElement('div');
+            section.className = 'metadata-section';
+
+            // Collapsible header
+            const header = document.createElement('div');
+            header.className = 'metadata-section-header';
+            header.textContent = title;
+            header.onclick = function() {
+                content.style.display = content.style.display === 'none' ? '' : 'none';
+            };
+            section.appendChild(header);
+
+            // Content
+            const content = document.createElement('div');
+            content.className = 'metadata-section-content';
+            content.style.display = '';
+            for (const [key, value] of Object.entries(dataObj)) {
+                const item = document.createElement('div');
+                item.className = 'metadata-item';
+                const keySpan = document.createElement('span');
+                keySpan.className = 'metadata-key';
+                keySpan.textContent = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                const valueSpan = document.createElement('span');
+                valueSpan.className = 'metadata-value';
+                valueSpan.textContent = value === null ? '' : value;
+                item.appendChild(keySpan);
+                item.appendChild(valueSpan);
+                content.appendChild(item);
+            }
+            section.appendChild(content);
+            return section;
+        }
+
+        // Render each section
+        const sections = [
+            ['Core Properties', metadata.core_properties],
+            ['App Properties', metadata.app_properties],
+            ['Custom Properties', metadata.custom_properties],
+            ['python-docx Core Properties', metadata.docx_core_properties],
+            ['python-docx Custom Properties', metadata.docx_custom_properties],
+        ];
+        let anySection = false;
+        for (const [title, data] of sections) {
+            const section = createSection(title, data);
+            if (section) {
+                metadataList.appendChild(section);
+                anySection = true;
+            }
+        }
+        if (!anySection) {
+            metadataList.textContent = 'No metadata found.';
+        }
+    }
+
+    // Add minimal CSS for collapsible sections
+    const style = document.createElement('style');
+    style.textContent = `
+    .metadata-section {
+      margin-bottom: 10px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      background: #fafbfc;
+    }
+    .metadata-section-header {
+      font-weight: bold;
+      background: #f1f3f4;
+      padding: 6px 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      user-select: none;
+    }
+    .metadata-section-content {
+      padding: 6px 10px;
+    }
+    `;
+    document.head.appendChild(style);
+
+    function displayRsidList(rsidData) {
+        const rsidStats = document.getElementById('rsidStats');
+        const rsidTableBody = document.getElementById('rsidTableBody');
+
+        // Update stats
+        rsidStats.textContent = `Total unique RSIDs: ${rsidData.total_count}`;
+
+        // Clear existing table content
+        rsidTableBody.innerHTML = '';
+
+        // Add each RSID to the table
+        rsidData.rsids.forEach(rsid => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${rsid.value}</td>
+                <td>${rsid.sources.join(', ')}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary rsid-action-btn" 
+                            onclick="highlightRsid('${rsid.value}')">
+                        Highlight
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary rsid-action-btn" 
+                            onclick="hideRsid('${rsid.value}')">
+                        Hide
+                    </button>
+                </td>
+            `;
+            rsidTableBody.appendChild(row);
+        });
+    }
+
+    function highlightRsid(rsidValue) {
+        // Remove previous highlights
+        document.querySelectorAll('.rsid-highlight').forEach(el => {
+            el.classList.remove('rsid-highlight');
+        });
+
+        // Highlight all elements with this RSID
+        const elements = document.querySelectorAll(`[data-rsid="${rsidValue}"]`);
+        elements.forEach(el => {
+            el.classList.add('rsid-highlight');
+        });
+
+        // Update selected RSID display
+        selectedRSID.innerHTML = rsidValue;
+        flashGreenDiv(selectedRSID);
+    }
+
+    function hideRsid(rsidValue) {
+        const elements = document.querySelectorAll(`[data-rsid="${rsidValue}"]`);
+        elements.forEach(el => {
+            el.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+        });
+    }
+
+    function displaySharedRsids(sharedRsids) {
+        const section = document.getElementById('sharedRsidsSection');
+        const content = document.getElementById('sharedRsidsContent');
+        content.innerHTML = '';
+
+        if (!sharedRsids || Object.keys(sharedRsids).length === 0) {
+            section.style.display = 'block';
+            content.innerHTML = '<em>No shared RSIDs found between the uploaded documents.</em>';
+            return;
+        }
+
+        let html = '<table class="shared-rsids-table"><thead><tr><th>RSID</th><th>Documents</th></tr></thead><tbody>';
+        for (const [rsid, docs] of Object.entries(sharedRsids)) {
+            html += `<tr><td>${rsid}</td><td>${docs.join('<br>')}</td></tr>`;
+        }
+        html += '</tbody></table>';
+        section.style.display = 'block';
+        content.innerHTML = html;
+    }
+
+    function displayResults(response) {
+        if (response.results) {
+            documentResults = response.results;
+            createDocumentTabs();
+            
+            // Display the first document by default
+            const firstFileName = Object.keys(documentResults)[0];
+            if (firstFileName) {
+                displayDocument(firstFileName);
+            }
+        }
+
+        // Display shared RSIDs if present
+        if (response.shared_rsids !== undefined) {
+            displaySharedRsids(response.shared_rsids);
+        }
+
+        results.style.display = 'block';
+    }
+
+    fileInput.addEventListener('change', function () {
+        if (this.files.length > 0) {
+            addFiles(Array.from(this.files));
+        }
+    });
+
+    // Handle form submission
+    document.getElementById('uploadForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        // Hide shared RSIDs section on new upload
+        document.getElementById('sharedRsidsSection').style.display = 'none';
+
+        const formData = new FormData();
+        
+        // Add CSRF token
+        formData.append('csrfmiddlewaretoken', document.querySelector('[name=csrfmiddlewaretoken]').value);
+        
+        // Add all selected files
+        selectedFiles.forEach(file => {
+            formData.append('documents', file);
+        });
+
+        const xhr = new XMLHttpRequest();
+
+        uploadProgress.style.display = 'block';
+        uploadButton.disabled = true;
+
+        xhr.upload.addEventListener('progress', function (e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                progressBar.style.width = percentComplete + '%';
+            }
+        });
+
+        xhr.addEventListener('load', function () {
+            if (xhr.status === 200) {
+                uploadStatus.textContent = 'Processing complete!';
+                const response = JSON.parse(xhr.responseText);
+                if (response.results) {
+                    displayResults(response);
+                }
+            } else {
+                const response = JSON.parse(xhr.responseText);
+                uploadStatus.textContent = response.error || 'Upload failed. Please try again.';
+                uploadButton.disabled = false;
+            }
+        });
+
+        xhr.addEventListener('error', function () {
+            uploadStatus.textContent = 'Upload failed. Please try again.';
+            uploadButton.disabled = false;
+        });
+
+        xhr.open('POST', '/upload/files/', true);
+        xhr.send(formData);
+    });
+
+    let selectedRun = null;
+
+    function flashGreenDiv(element) {
+        // Store original background
+        let originalBg = element.style.backgroundColor || 'var(--bs-bg-secondary)';
+        
+        // Flash green
+        element.style.backgroundColor = 'rgb(27, 254, 84)';
+        
+        // Return to original after 0.7 seconds
+        setTimeout(() => {
+            element.style.backgroundColor = originalBg;
+        }, 700);
+    }
+
+    function handleRunClick(event) {
+        selectedRun = event.target;
+        selectedRSID.innerHTML = selectedRun.getAttribute('data-rsid');
+        console.log(selectedRSID);
+
+        flashGreenDiv(selectedRSID);
+    }
+
+    function getRSID(event) {
+        value = event.target.getAttribute('data-rsid');
+        return value
+    }
+
+    function getAllWithRSID(rsid){
+        return reconstructedDocument.querySelectorAll(`.run[data-rsid="${rsid}"]`);
+    }
+
+    function attachRunListeners() {
+        reconstructedDocument.querySelectorAll('.run').forEach(run => {
+            run.addEventListener('mouseover', function(e) {
+                let rsid = getRSID(e);
+                console.log("RSID HOVER\n", rsid)
+                let query = getAllWithRSID(rsid);
+                query.forEach(run => {
+                    run.style.border = '1px solid red';
+                });
+            });
+            run.addEventListener('mouseout', function(e) {
+                let rsid = getRSID(e);
+                let query = getAllWithRSID(rsid);
+                query.forEach(run => {
+                    run.style.border = '';
+                });
+            });
+            run.addEventListener('click', handleRunClick);
+        });
+    }
+
+    function getSelectedColour() {
+        console.log("colour \n")
+        console.log(selectedColour.value)
+        return selectedColour.value;
+    }
+
+    function changeColourRsid() {
+        let rsid = selectedRSID.innerHTML;
+        console.log(rsid);
+        let selectedColor = getSelectedColour();
+        
+        let runs = getAllWithRSID(rsid);
+        console.log(runs);
+        runs.forEach(run => {
+            run.style.backgroundColor = selectedColor;
+        });
+    }
+
+    function selected_rsid_toggle_hidden() {
+        let rsid = selectedRSID.innerHTML;
+        let hideColour = "rgba(255, 255, 255, 0)";
+        let runs = getAllWithRSID(rsid);
+        runs.forEach(run => {
+            run.style.backgroundColor = hideColour;
+        });
+    }
+
+    function hideAllRuns() {
+        // Get all .run elements in the reconstructed document
+        let runs = reconstructedDocument.querySelectorAll('.run');
+        runs.forEach(run => {
+            run.style.backgroundColor = 'rgba(255, 255, 255, 0)';
+        });
+    }
+
+    function unhideAllRuns() {
+        // Get all .run elements in the reconstructed document
+        let runs = reconstructedDocument.querySelectorAll('.run');
+        runs.forEach(run => {
+            // Remove the inline backgroundColor style to let the CSS from header take over
+            run.style.backgroundColor = '';
+        });
+    }
+
+</script>
+{% endblock %}
