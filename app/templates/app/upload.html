@@ -43,6 +43,271 @@
         margin-top: 2rem;
     }
 
+    /* File list styles */
+    .file-list {
+        margin-top: 1rem;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 0.5rem;
+        background: white;
+    }
+
+    .file-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.5rem;
+        border-bottom: 1px solid #f8f9fa;
+        font-size: 0.9rem;
+    }
+
+    .file-item:last-child {
+        border-bottom: none;
+    }
+
+    .file-name {
+        flex: 1;
+        margin-right: 1rem;
+    }
+
+    .file-size {
+        color: #6c757d;
+        font-size: 0.8rem;
+    }
+
+    .remove-file {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 0.2rem 0.5rem;
+        font-size: 0.8rem;
+        cursor: pointer;
+    }
+
+    .remove-file:hover {
+        background: #c82333;
+    }
+
+    /* Document reconstruction styles */
+    .reconstructed-document {
+        font-family: Arial, sans-serif;
+        line-height: 1.4;
+        width: 70%;
+        margin: 0 auto;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .paragraph {
+        margin-bottom: 0.5em;
+        position: relative;
+        min-height: 1.2em;
+    }
+
+    .run {
+        display: inline;
+        border-radius: 2px;
+        padding: 0 2px;
+    }
+
+    .paragraph-id {
+        position: absolute;
+        left: -150px;
+        color: #999;
+        font-size: 0.8em;
+    }
+
+    .empty-paragraph {
+        border-left: 2px solid #ddd;
+        padding-left: 10px;
+        margin-left: 5px;
+        margin-bottom: 0.3em;
+    }
+
+    .empty-paragraph::before {
+        content: "¶";
+        color: #999;
+        font-size: 0.8em;
+        margin-right: 5px;
+    }
+
+    .document-controls {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 8px;
+    }
+
+    .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1rem;
+    }
+
+    .legend-item {
+        display: flex;
+        align-items: center;
+        font-size: 0.9em;
+    }
+
+    .legend-color {
+        width: 20px;
+        height: 20px;
+        border-radius: 4px;
+        margin-right: 0.5rem;
+    }
+
+    /* Multiple document styles */
+    .document-tabs {
+        margin-bottom: 1rem;
+    }
+
+    .document-tab {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        margin-right: 0.5rem;
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px 5px 0 0;
+        cursor: pointer;
+        text-decoration: none;
+        color: #495057;
+    }
+
+    .document-tab.active {
+        background: white;
+        border-bottom-color: white;
+        font-weight: bold;
+    }
+
+    .document-content {
+        display: none;
+    }
+
+    .document-content.active {
+        display: block;
+    }
+
+    /* RSID List Styles */
+    .rsid-list {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+    }
+
+    .rsid-stats {
+        font-size: 0.9em;
+        color: #666;
+        padding: 5px;
+        background: #f8f9fa;
+        border-radius: 3px;
+    }
+
+    .rsid-table {
+        font-size: 0.85em;
+    }
+
+    .rsid-table th {
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1;
+    }
+
+    .rsid-highlight {
+        background-color: #e9ecef;
+    }
+
+    .rsid-action-btn {
+        padding: 2px 5px;
+        font-size: 0.8em;
+        margin: 0 2px;
+    }
+
+    /* Metadata List Styles */
+    .metadata-list {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 10px;
+        font-size: 0.85em;
+    }
+
+    .metadata-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .metadata-item:last-child {
+        border-bottom: none;
+    }
+
+    .metadata-key {
+        font-weight: bold;
+        color: #495057;
+        padding-right: 10px;
+        white-space: nowrap;
+    }
+
+    .metadata-value {
+        color: #6c757d;
+        text-align: right;
+        word-break: break-all;
+    }
+
+    .metadata-section {
+        margin-bottom: 10px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        background: #fafbfc;
+    }
+
+    .metadata-section-header {
+        font-weight: bold;
+        background: #f1f3f4;
+        padding: 6px 10px;
+        cursor: pointer;
+        border-bottom: 1px solid #eee;
+        user-select: none;
+    }
+
+    .metadata-section-content {
+        padding: 6px 10px;
+    }
+
+    /* Metadata List Styles */
+    .shared-rsids-section {
+    margin-top: 1.5em;
+    padding: 1em;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+    }
+    
+    .shared-rsids-table {
+    width: 100%;
+    border-collapse: collapse;
+    }
+    
+    .shared-rsids-table th, .shared-rsids-table td {
+    border: 1px solid #ccc;
+    padding: 0.4em 0.7em;
+    text-align: left;
+    }
+    
+    .shared-rsids-table th {
+    background: #f0f0f0;
+    }
+
 </style>
 {% endblock %}
 

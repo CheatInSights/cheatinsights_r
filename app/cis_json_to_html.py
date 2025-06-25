@@ -6,26 +6,34 @@ import hashlib
 import io
 
 class DocumentReconstructor:
-    def __init__(self, json_file):
+    def __init__(self, json_file, document_name=None):
         """
         Initialize the document reconstructor with a JSON file or string.
         
         Args:
             json_file: Either a file path (str) or a file-like object (StringIO) containing JSON data
+            document_name: Optional name of the document for unique RSID handling
         """
         self.json_file = json_file
+        self.document_name = document_name
         if isinstance(json_file, str):
             with open(json_file, 'r', encoding='utf-8') as f:
                 self.data = json.load(f)
+                print("HERE VVVVV\n")
+                print(self.data)
         else:
             # Handle file-like object
             self.data = json.load(json_file)
+            print("2HERE VVVVV\n")
+            print(self.data)
         self.rsid_colors = self._generate_rsid_colors()
 
     def _generate_rsid_colors(self):
         """
         Generate a unique color for each RSID in the document.
         Uses a hash function to ensure consistent colors for the same RSID.
+        If document_name is provided, it's included in the hash to ensure
+        different colors for the same RSID across different documents.
         
         Returns:
             dict: Mapping of RSIDs to hex color codes
@@ -41,8 +49,12 @@ class DocumentReconstructor:
         
         # Generate colors for each RSID
         for rsid in unique_rsids:
-            # Use hash of RSID to generate consistent color
-            hash_object = hashlib.md5(rsid.encode())
+            # Use hash of RSID (and document name if provided) to generate consistent color
+            hash_input = rsid
+            if self.document_name:
+                hash_input = f"{self.document_name}_{rsid}"
+            
+            hash_object = hashlib.md5(hash_input.encode())
             hash_value = int(hash_object.hexdigest(), 16)
             
             # Convert hash to HSV color space for better color distribution
@@ -96,7 +108,6 @@ class DocumentReconstructor:
         body {{
             font-family: Arial, sans-serif;
             line-height: 1.4;
-            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }}
@@ -161,6 +172,8 @@ class DocumentReconstructor:
 </html>"""
 
         if output_file is None:
+            print("here is hetml_content\n")
+            print(html_content)
             return html_content
 
         # Write to file if output_file is provided
@@ -168,6 +181,8 @@ class DocumentReconstructor:
             f.write(html_content)
 
         print(f"[DEBUG] Created HTML file: {output_file}")
+        print("output_file \n")
+        print(output_file)
         return output_file
 
 def main():
