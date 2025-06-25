@@ -1,58 +1,132 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Welcome to My Django App</title>
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .container {
-            background: white;
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-            max-width: 500px;
-            width: 90%;
-        }
-        h1 {
-            color: #333;
-            margin-bottom: 1rem;
-        }
-        p {
-            color: #666;
-            line-height: 1.6;
-            margin-bottom: 1.5rem;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            background: #667eea;
-            color: white;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background 0.3s ease;
-        }
-        .btn:hover {
-            background: #5a6fd8;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Welcome to My Django App!</h1>
-        <p>This is your home page. You can customize this template to display whatever content you want for your users.</p>
-        <p>Current time: {{ current_time }}</p>
-        <a href="#" class="btn">Get Started</a>
+{% extends "app/base.html" %}
+
+{% block title %}Home - CheatInSights{% endblock %}
+
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+    <div class="hero-container">
+        <h1>Document Integrity Analysis Made Simple</h1>
+        <p>Uncover hidden changes and track document revisions with our advanced analysis tools. Get instant insights into document modifications and maintain version control effortlessly.</p>
+        <div class="hero-buttons">
+            <a href="/upload" class="btn btn-white btn-large">Start Free Trial</a>
+            <a href="#" class="btn btn-primary btn-large">Watch Demo</a>
+        </div>
     </div>
-</body>
-</html> 
+</section>
+
+<!-- Moving Text Divider -->
+<div class="moving-text-container">
+    <div class="moving-text">
+        <span>Document Analysis</span>
+        <span>•</span>
+        <span>Version Control</span>
+        <span>•</span>
+        <span>Change Tracking</span>
+        <span>•</span>
+        <span>Revision History</span>
+        <span>•</span>
+        <span>Content Verification</span>
+        <span>•</span>
+        <span>Document Integrity</span>
+        <span>•</span>
+        <span>Document Analysis</span>
+        <span>•</span>
+        <span>Version Control</span>
+        <span>•</span>
+        <span>Change Tracking</span>
+        <span>•</span>
+        <span>Revision History</span>
+        <span>•</span>
+        <span>Content Verification</span>
+        <span>•</span>
+        <span>Document Integrity</span>
+        <span>•</span>
+        <span>Document Analysis</span>
+        <span>•</span>
+        <span>Version Control</span>
+        <span>•</span>
+        <span>Change Tracking</span>
+        <span>•</span>
+        <span>Revision History</span>
+        <span>•</span>
+        <span>Content Verification</span>
+        <span>•</span>
+        <span>Document Integrity</span>
+        <span>•</span>
+        <span>Document Analysis</span>
+        <span>•</span>
+        <span>Version Control</span>
+        <span>•</span>
+        <span>Change Tracking</span>
+        <span>•</span>
+        <span>Revision History</span>
+        <span>•</span>
+        <span>Content Verification</span>
+        <span>•</span>
+        <span>Document Integrity</span>
+    </div>
+</div>
+
+<!-- Features Section -->
+<section class="features" id="features">
+    <div class="features-container">
+        <div class="section-title">
+            <h2>Why Choose CheatInSights?</h2>
+            <p>Modern security for the modern workplace</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔒</div>
+                <h3>Zero Trust Security</h3>
+                <p>Every connection is verified and encrypted. No implicit trust, no broad network access. Only authenticated users can access specific resources they need.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">⚡</div>
+                <h3>Lightning Fast Setup</h3>
+                <p>Deploy in minutes with our simple agent installation. No complex network configurations or hardware requirements. Get your team connected instantly.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🌐</div>
+                <h3>Global Network</h3>
+                <p>Connect from anywhere with our worldwide network of secure gateways. Optimized routing ensures the best performance for your remote workforce.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Complete Visibility</h3>
+                <p>Real-time monitoring and detailed analytics give you full visibility into who's accessing what, when, and from where across your network.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🔧</div>
+                <h3>Easy Management</h3>
+                <p>Intuitive admin console makes it simple to manage users, resources, and policies. No specialized networking knowledge required.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Enterprise Grade</h3>
+                <p>Built for scale with enterprise-grade security, compliance certifications, and 99.9% uptime SLA. Trusted by companies worldwide.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- CTA Section -->
+<section class="cta">
+    <div class="cta-container">
+        <h2>Ready to Modernize Your Network Security?</h2>
+        <p>Join thousands of companies who have already made the switch to zero trust network access.</p>
+        <div class="hero-buttons">
+            <a href="#" class="btn btn-primary btn-large">Start Free Trial</a>
+            <a href="#" class="btn btn-secondary btn-large">Contact Sales</a>
+        </div>
+    </div>
+</section>
+{% endblock %} 
