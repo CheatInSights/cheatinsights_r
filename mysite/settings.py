@@ -87,9 +87,14 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-# Check if PostgreSQL environment variables are available
-if all(key in os.environ for key in ["PGDATABASE", "PGUSER", "PGPASSWORD", "PGHOST", "PGPORT"]):
-    # Use PostgreSQL (for production)
+import dj_database_url
+
+DATABASE_URL = os.getenv('DATABASE_URL')
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(DATABASE_URL)
+    }
+elif all(key in os.environ for key in ["PGDATABASE", "PGUSER", "PGPASSWORD", "PGHOST", "PGPORT"]):
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -101,7 +106,6 @@ if all(key in os.environ for key in ["PGDATABASE", "PGUSER", "PGPASSWORD", "PGHO
         }
     }
 else:
-    # Use SQLite (for local development)
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
