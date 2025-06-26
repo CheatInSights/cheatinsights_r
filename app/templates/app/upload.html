@@ -43,6 +43,31 @@
         margin-top: 2rem;
     }
 
+    /* Graph container styles */
+    #graphContainer {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .chart-wrapper {
+        max-width: 800px;
+        max-height: 600px;
+        margin: 20px auto;
+        padding: 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-canvas {
+        max-width: 100% !important;
+        max-height: 500px !important;
+        width: 100% !important;
+        height: 400px !important;
+    }
+
     /* File list styles */
     .file-list {
         margin-top: 1rem;
@@ -308,6 +333,99 @@
     background: #f0f0f0;
     }
 
+    /* Suspicion Score Styles */
+    .suspicion-score-container {
+      background: #f8f9fa;
+      /* border-radius: 8px; */
+      /* padding: 20px; */
+      margin-top: 15px;
+    }
+    
+    .score-display {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 6px;
+      border: 2px solid #e9ecef;
+    }
+    
+    .main-score {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .score-value {
+      color: #dc3545;
+      font-size: 28px;
+    }
+    
+    .total-score {
+      font-size: 14px;
+      color: #6c757d;
+    }
+    
+    .factors-section {
+      margin-bottom: 20px;
+    }
+    
+    .factors-section h4 {
+      color: #495057;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    .factors-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .factors-list li {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      color: #856404;
+      font-size: 14px;
+    }
+    
+    .statistics-section h4 {
+      color: #495057;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+    
+    .stat-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .stat-label {
+      font-weight: 500;
+      color: #495057;
+      font-size: 14px;
+    }
+    
+    .stat-value {
+      font-weight: bold;
+      color: #007bff;
+      font-size: 14px;
+    }
+
 </style>
 {% endblock %}
 
@@ -422,6 +540,13 @@
                             <div id="sharedRsidsContent"></div>
                         </div>
 
+                        <div id="suspicionScoreSection" class="shared-rsids-section" style="display:none;">
+                            <h3>Suspicion Score</h3>
+                            <div id="suspicionScoreContent"></div>
+                        </div>
+
+
+
                         
 
                         <div class="mt-4" id="pdf">
@@ -435,6 +560,10 @@
 
         </div>
     </div>
+</div>
+
+<div id="graphContainer" class="row justify-content-center py-5">
+
 </div>
 {% endblock %}
 
@@ -455,9 +584,13 @@
     const selectedRSID = document.getElementById('selected_RSID');
     const selectedColour = document.getElementById('rsid_color');
     const documentTabs = document.getElementById('documentTabs');
+    const graphContainer = document.getElementById('graphContainer');
+
 
     let selectedFiles = [];
     let documentResults = {};
+    let globalResponse = null; // Global variable to store the full response
+    let metricsDictionary = {};
 
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -579,6 +712,7 @@
     function createDocumentTabs() {
         documentTabs.innerHTML = '';
         Object.keys(documentResults).forEach((fileName, index) => {
+            // console.log(fileName);
             const tab = document.createElement('a');
             tab.href = '#';
             tab.className = `document-tab ${index === 0 ? 'active' : ''}`;
@@ -736,6 +870,97 @@
     .metadata-section-content {
       padding: 6px 10px;
     }
+    
+    /* Suspicion Score Styles */
+    .suspicion-score-container {
+      background: #f8f9fa;
+      margin-top: 15px;
+    }
+    
+    .score-display {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 6px;
+      border: 2px solid #e9ecef;
+    }
+    
+    .main-score {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    
+    .score-value {
+      color: #dc3545;
+      font-size: 28px;
+    }
+    
+    .total-score {
+      font-size: 14px;
+      color: #6c757d;
+    }
+    
+    .factors-section {
+      margin-bottom: 20px;
+    }
+    
+    .factors-section h4 {
+      color: #495057;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+    
+    .factors-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    
+    .factors-list li {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      color: #856404;
+      font-size: 14px;
+    }
+    
+    .statistics-section h4 {
+      color: #495057;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+    
+    .stat-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .stat-label {
+      font-weight: 500;
+      color: #495057;
+      font-size: 14px;
+    }
+    
+    .stat-value {
+      font-weight: bold;
+      color: #007bff;
+      font-size: 14px;
+    }
     `;
     document.head.appendChild(style);
 
@@ -814,9 +1039,64 @@
         content.innerHTML = html;
     }
 
+    function displaySuspicionScore(suspicionScoreData) {
+        const section = document.getElementById('suspicionScoreSection');
+        const content = document.getElementById('suspicionScoreContent');
+        content.innerHTML = '';
+
+        if (!suspicionScoreData) {
+            section.style.display = 'none';
+            return;
+        }
+
+        let html = '<div class="suspicion-score-container">';
+        
+        // Main score display
+        html += '<div class="score-display">';
+        html += `<div class="main-score">Suspicion Score: <span class="score-value">${suspicionScoreData.score}%</span></div>`;
+        html += `<div class="total-score">Raw Score: ${suspicionScoreData.total_score}</div>`;
+        html += '</div>';
+
+        // Factors that contributed to the score
+        if (suspicionScoreData.factors && suspicionScoreData.factors.length > 0) {
+            html += '<div class="factors-section">';
+            html += '<h4>Suspicious Factors:</h4>';
+            html += '<ul class="factors-list">';
+            suspicionScoreData.factors.forEach(factor => {
+                html += `<li>${factor}</li>`;
+            });
+            html += '</ul>';
+            html += '</div>';
+        }
+
+        // Statistics
+        if (suspicionScoreData.statistics) {
+            html += '<div class="statistics-section">';
+            html += '<h4>Document Statistics:</h4>';
+            html += '<div class="stats-grid">';
+            html += `<div class="stat-item"><span class="stat-label">Average Chars per RSID:</span> <span class="stat-value">${suspicionScoreData.statistics.average_chars_per_rsid}</span></div>`;
+            html += `<div class="stat-item"><span class="stat-value">Average Chars per Run:</span> <span class="stat-value">${suspicionScoreData.statistics.average_chars_per_run}</span></div>`;
+            html += `<div class="stat-item"><span class="stat-label">Word Count:</span> <span class="stat-value">${suspicionScoreData.statistics.word_count}</span></div>`;
+            html += `<div class="stat-item"><span class="stat-label">Short Paragraphs:</span> <span class="stat-value">${suspicionScoreData.statistics.short_paragraph_count}</span></div>`;
+            html += `<div class="stat-item"><span class="stat-label">Unique RSIDs:</span> <span class="stat-value">${suspicionScoreData.statistics.unique_rsid_count}</span></div>`;
+            html += `<div class="stat-item"><span class="stat-label">Total Runs:</span> <span class="stat-value">${suspicionScoreData.statistics.total_runs}</span></div>`;
+            html += '</div>';
+            html += '</div>';
+        }
+
+        html += '</div>';
+
+        section.style.display = 'block';
+        content.innerHTML = html;
+    }
+
     function displayResults(response) {
+        // Store the response globally so other functions can access it
+        globalResponse = response;
+        
         if (response.results) {
             documentResults = response.results;
+            // console.log(documentResults);
             createDocumentTabs();
             
             // Display the first document by default
@@ -824,6 +1104,17 @@
             if (firstFileName) {
                 displayDocument(firstFileName);
             }
+
+            // Display suspicion score for the first document (or average if multiple)
+            if (response.results && Object.keys(response.results).length > 0) {
+                const firstResult = response.results[firstFileName];
+                if (firstResult.metrics) {
+                    displaySuspicionScore(firstResult.metrics);
+                }
+            }
+        } else if (response.metrics) {
+            // Single file upload
+            displaySuspicionScore(response.metrics);
         }
 
         // Display shared RSIDs if present
@@ -875,6 +1166,8 @@
                 const response = JSON.parse(xhr.responseText);
                 if (response.results) {
                     displayResults(response);
+                    // add here
+                    generateMetricsDictionary();
                 }
             } else {
                 const response = JSON.parse(xhr.responseText);
@@ -910,7 +1203,7 @@
     function handleRunClick(event) {
         selectedRun = event.target;
         selectedRSID.innerHTML = selectedRun.getAttribute('data-rsid');
-        console.log(selectedRSID);
+        // console.log(selectedRSID);
 
         flashGreenDiv(selectedRSID);
     }
@@ -928,7 +1221,7 @@
         reconstructedDocument.querySelectorAll('.run').forEach(run => {
             run.addEventListener('mouseover', function(e) {
                 let rsid = getRSID(e);
-                console.log("RSID HOVER\n", rsid)
+                // console.log("RSID HOVER\n", rsid)
                 let query = getAllWithRSID(rsid);
                 query.forEach(run => {
                     run.style.border = '1px solid red';
@@ -989,5 +1282,358 @@
         });
     }
 
+
+
+        
+    // Helper: Extract metric data from document results
+    function extractMetricData(filename, metric) {
+        if (documentResults.hasOwnProperty(filename)) {
+            return { [filename]: documentResults[filename].metrics[metric] };
+        }
+        return {};
+    }
+
+    // Helper: Extract two specific statistics values from all documents
+    function getStatisticsXY(statKey1, statKey2) {
+        const result = {};
+        
+        // Find the statistics array in metricsDictionary
+        const statisticsArray = metricsDictionary.statistics;
+        if (!statisticsArray) {
+            console.log("No statistics found in metricsDictionary");
+            return result;
+        }
+        
+        // Iterate through each statistics object
+        statisticsArray.forEach(statObj => {
+            const filename = Object.keys(statObj)[0];
+            const stats = statObj[filename];
+            
+            if (stats && stats[statKey1] !== undefined && stats[statKey2] !== undefined) {
+                result[filename] = [stats[statKey1], stats[statKey2]];
+            }
+        });
+        
+        console.log("getStatisticsXY result:", result);
+        return result;
+    }
+
+    // Helper: Extract a single statistics value from all documents (for count-based plotting)
+    function getStatisticsX(statKey) {
+        const result = [];
+        
+        // Find the statistics array in metricsDictionary
+        const statisticsArray = metricsDictionary.statistics;
+        if (!statisticsArray) {
+            console.log("No statistics found in metricsDictionary");
+            return result;
+        }
+        
+        // Iterate through each statistics object
+        statisticsArray.forEach(statObj => {
+            const filename = Object.keys(statObj)[0];
+            const stats = statObj[filename];
+            
+            if (stats && stats[statKey] !== undefined) {
+                result.push({ [filename]: stats[statKey] });
+            }
+        });
+        
+        console.log("getStatisticsX result:", result);
+        return result;
+    }
+
+    // Helper: Calculate mean and standard deviation
+    function calculateStats(values) {
+        const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+        const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+        const stdDev = Math.sqrt(variance);
+        return { mean, stdDev };
+    }
+
+    // Process raw metric data with optional normalization and ID tagging
+    function processMetricData(metricData, normalised = false, count = false) {
+        let roundedData = metricData.map(item => {
+            const key = Object.keys(item)[0];
+            const value = item[key];
+            return { [key]: Math.round(value) };
+        });
+
+        if (normalised) {
+            const values = roundedData.map(item => Object.values(item)[0]);
+            const { mean, stdDev } = calculateStats(values);
+            roundedData = roundedData.map(item => {
+                const key = Object.keys(item)[0];
+                const z = (item[key] - mean) / stdDev;
+                return { [key]: Math.round(z * 100) / 100 };
+            });
+        }
+
+        if (count) {
+            const valueCount = {};
+            const idTracker = {};
+            roundedData.forEach(item => {
+                const key = Object.keys(item)[0];
+                const val = item[key];
+                valueCount[val] = (valueCount[val] || 0) + 1;
+            });
+
+            roundedData = roundedData.map(item => {
+                const key = Object.keys(item)[0];
+                const val = item[key];
+                idTracker[val] = (idTracker[val] || 1);
+                const newItem = { [key]: [idTracker[val], val] };
+                idTracker[val]++;
+                return newItem;
+            });
+        }
+
+        return roundedData;
+    }
+
+    // Draw a scatter plot (optionally with a normal curve)
+    function createScatterPlot(dataPoints, isNormalised = false, metricLabel = '', xAxisLabel = 'Value', yAxisLabel = 'ID Count') {
+        const chartWrapper = document.createElement('div');
+        chartWrapper.className = 'chart-wrapper';
+
+        const canvas = document.createElement('canvas');
+        canvas.className = 'chart-canvas';
+        chartWrapper.appendChild(canvas);
+        graphContainer.appendChild(chartWrapper);
+
+        const chartData = dataPoints.map(item => {
+            const key = Object.keys(item)[0];
+            const [id, value] = item[key];
+            return { x: value, y: id };
+        });
+
+        const maxY = Math.max(...chartData.map(p => p.y));
+        const yAxisMax = maxY * 2;
+
+        const datasets = [{
+            label: 'Data Points',
+            data: chartData,
+            backgroundColor: 'rgba(255, 0, 0, 1)',
+            borderColor: 'rgba(0, 0, 0, 1)',
+            pointStyle: 'circle',
+            pointRadius: 5,
+            pointHoverRadius: 7,
+            order: 1  // Higher order = appears on top
+        }];
+
+        if (isNormalised) {
+            const xVals = chartData.map(p => p.x);
+            const { mean, stdDev } = calculateStats(xVals);
+            const minX = Math.min(...xVals);
+            const maxX = Math.max(...xVals);
+            const peakY = 1 / (stdDev * Math.sqrt(2 * Math.PI));
+            const scaleFactor = maxY / peakY;
+
+            // Create multiple datasets for different standard deviation ranges
+            const stdDevRanges = [
+                { range: 3, color: 'rgba(255, 100, 0, 0.2)', label: '±3σ' },
+                { range: 2, color: 'rgba(255, 180, 0, 0.4)', label: '±2σ' },
+                { range: 1, color: 'rgba(255, 255, 0, 0.5)', label: '±1σ' }
+            ];
+
+            // Add filled areas for each standard deviation range (layered effect)
+            stdDevRanges.forEach(({ range, color, label }) => {
+                const fillCurve = [];
+                const startX = mean - (range * stdDev);
+                const endX = mean + (range * stdDev);
+                
+                // Generate curve points for this range
+                for (let x = startX; x <= endX; x += (endX - startX) / 50) {
+                    const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
+                            Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2)) * scaleFactor;
+                    fillCurve.push({ x, y });
+                }
+
+                datasets.unshift({
+                    label: label,
+                    data: fillCurve,
+                    type: 'line',
+                    borderColor: color.replace(/[\d.]+\)$/, '0.8)'),
+                    backgroundColor: color,
+                    borderWidth: 1,
+                    fill: true,
+                    pointRadius: 0,
+                    tension: 0.4,
+                    order: 3  // Lower order = appears behind
+                });
+            });
+
+            // Add the main normal distribution curve on top of fills but behind points
+            const curve = [];
+            for (let x = minX; x <= maxX; x += (maxX - minX) / 50) {
+                const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
+                        Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2)) * scaleFactor;
+                curve.push({ x, y });
+            }
+
+            datasets.unshift({
+                label: 'Normal Distribution',
+                data: curve,
+                type: 'line',
+                borderColor: 'rgba(0, 0, 255, 0.8)',
+                borderWidth: 2,
+                fill: false,
+                pointRadius: 0,
+                tension: 0.4,
+                order: 2  // Between fills and points
+            });
+        }
+
+        new Chart(canvas, {
+            type: 'scatter',
+            data: { datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                aspectRatio: 2,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: isNormalised ? `Normalised ${metricLabel}` : metricLabel,
+                        font: { size: 16, weight: 'bold' },
+                        padding: { top: 10, bottom: 20 }
+                    },
+                    legend: { display: true },
+                    tooltip: {
+                        callbacks: {
+                            title: (ctx) => {
+                                const p = ctx[0].parsed;
+                                return ctx[0].dataset.label === 'Normal Distribution'
+                                    ? `Expected at x = ${p.x.toFixed(2)}`
+                                    : `Data Point: x = ${p.x}, y = ${p.y}`;
+                            },
+                            label: (ctx) => {
+                                if (ctx.dataset.label === 'Normal Distribution') {
+                                    return `Expected Distribution`;
+                                }
+                                // For statistics charts, show filename
+                                const dataPoint = ctx.parsed;
+                                const dataIndex = ctx.dataIndex;
+                                const originalData = dataPoints[dataIndex];
+                                if (originalData) {
+                                    const filename = Object.keys(originalData)[0];
+                                    return `File: ${filename}`;
+                                }
+                                return `Data Point`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        title: { display: true, text: xAxisLabel }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        max: yAxisMax,
+                        title: { display: true, text: yAxisLabel },
+                        ticks: { 
+                            precision: 0,
+                            // Remove stepSize to let Chart.js auto-generate appropriate ticks
+                            callback: function(value, index, values) {
+                                // Only show every nth tick to avoid overcrowding
+                                return index % Math.max(1, Math.floor(values.length / 10)) === 0 ? value : '';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Create all charts based on the metricsDictionary
+    function createGraphs() {
+        const individual = [
+            'total_characters_count',
+            'total_word_count',
+            'total_paragraph_count',
+            'total_runs_count',
+            'unique_rsid_count'
+        ]
+        const pair = [
+            ['total_characters_count', 'total_runs_count'],
+            ['total_characters_count', 'unique_rsid_count'],
+            ['total_word_count', 'total_runs_count'],
+            ['total_word_count', 'unique_rsid_count'],
+            ['total_paragraph_count', 'total_runs_count'],
+            ['total_paragraph_count', 'unique_rsid_count'],
+            ['unique_rsid_count', 'total_runs_count']
+        ]
+
+        Object.entries(metricsDictionary).forEach(([metricKey, data]) => {
+            if (metricKey === 'score') {
+                const raw = processMetricData(data, false, true);
+                // const norm = processMetricData(data, true, true);
+                createScatterPlot(raw, true, metricKey);
+                // createScatterPlot(norm, true, metricKey);
+            }
+            if (metricKey === 'total_score') {
+                const raw = processMetricData(data, false, true);
+                // const norm = processMetricData(data, true, true);
+                createScatterPlot(raw, true, metricKey);
+                // createScatterPlot(norm, true, metricKey);
+            }
+            if (metricKey === 'statistics') {
+
+                // Create individual statistics charts (X vs Count)
+                individual.forEach(statKey => {
+                    const statData = getStatisticsX(statKey);
+                    if (statData.length > 0) {
+                        const processedData = processMetricData(statData, false, true);
+                        // const processedDataNormalised = processMetricData(statData, true, true);
+                        const chartTitle = `${statKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Distribution`;
+                        const xAxisLabel = statKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        createScatterPlot(processedData, true, chartTitle, xAxisLabel, 'Count');
+                        // createScatterPlot(processedDataNormalised, true, chartTitle, xAxisLabel, 'Count');
+                    }
+                });
+
+                // Create XY pair charts
+                pair.forEach(([statKey1, statKey2]) => {
+                    const pairData = getStatisticsXY(statKey1, statKey2);
+                    if (Object.keys(pairData).length > 0) {
+                        const data = Object.entries(pairData).map(([filename, [val1, val2]]) => {
+                            return { [filename]: [val1, val2] };
+                        });
+                        const chartTitle = `${statKey1.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} vs ${statKey2.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
+                        const xAxisLabel = statKey1.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        const yAxisLabel = statKey2.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                        // createScatterPlot(data, false, chartTitle, xAxisLabel, yAxisLabel);
+                        createScatterPlot(data, true, chartTitle, xAxisLabel, yAxisLabel);
+                    }
+                });
+
+                console.log("found statistics");
+            }
+        });
+
+
+    }
+
+    // Build metrics dictionary from documentResults
+    function generateMetricsDictionary() {
+        Object.entries(documentResults).forEach(([filename, fileData]) => {
+            if (fileData.metrics) {
+                Object.entries(fileData.metrics).forEach(([metricKey, metricValue]) => {
+                    const extracted = extractMetricData(filename, metricKey);
+                    if (!metricsDictionary[metricKey]) {
+                        metricsDictionary[metricKey] = [];
+                    }
+                    metricsDictionary[metricKey].push(extracted);
+                });
+            }
+        });
+        console.log("metricsDictioary:", metricsDictionary);
+
+        createGraphs();
+    }
+
 </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 {% endblock %}

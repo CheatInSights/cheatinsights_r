@@ -4,6 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from .cis_extractor import Extract
 from .cis_json_to_html import DocumentReconstructor
+from .cis_statistics import DOCXStatistics
 import io
 import json
 
@@ -52,6 +53,11 @@ def handle_multiple_uploads(request):
                 settings_rsids = extractor.get_settings_rsids()
                 metadata = extractor.get_metadata()
 
+
+                # Calculate suspicion score for this file
+                statistics = DOCXStatistics(paragraphs, metadata, settings_rsids)
+                suspicion_score = statistics.calculate_suspicion_score()
+
                 # Convert paragraphs to JSON string
                 json_data = json.dumps(paragraphs, ensure_ascii=False)
                 
@@ -67,7 +73,8 @@ def handle_multiple_uploads(request):
                     'html': html_content,
                     'data': paragraphs,
                     'settings_rsids': settings_rsids,
-                    'metadata': metadata
+                    'metadata': metadata,
+                    'metrics': suspicion_score
                 }
 
                 # Collect RSIDs for this document
@@ -95,6 +102,11 @@ def handle_multiple_uploads(request):
             else:
                 print("No shared RSIDs found between documents.")
             print("===============================================\n")
+
+
+            print("suspicion_score: \n")
+            for i in suspicion_score:
+                print(f"{i}: {suspicion_score[i]}")
 
             # Return results for all files, and shared RSIDs
             return JsonResponse({
