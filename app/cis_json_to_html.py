@@ -19,13 +19,13 @@ class DocumentReconstructor:
         if isinstance(json_file, str):
             with open(json_file, 'r', encoding='utf-8') as f:
                 self.data = json.load(f)
-                print("HERE VVVVV\n")
-                print(self.data)
+                # print("HERE VVVVV\n")
+                # print(self.data)
         else:
             # Handle file-like object
             self.data = json.load(json_file)
-            print("2HERE VVVVV\n")
-            print(self.data)
+            # print("2HERE VVVVV\n")
+            # print(self.data)
         self.rsid_colors = self._generate_rsid_colors()
 
     def _generate_rsid_colors(self):
@@ -172,17 +172,17 @@ class DocumentReconstructor:
 </html>"""
 
         if output_file is None:
-            print("here is hetml_content\n")
-            print(html_content)
+            # print("here is html_content\n")
+            # print(html_content)
             return html_content
 
         # Write to file if output_file is provided
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
 
-        print(f"[DEBUG] Created HTML file: {output_file}")
-        print("output_file \n")
-        print(output_file)
+        # print(f"[DEBUG] Created HTML file: {output_file}")
+        # print("output_file \n")
+        # print(output_file)
         return output_file
 
 def main():

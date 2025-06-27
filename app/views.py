@@ -7,6 +7,7 @@ from .cis_json_to_html import DocumentReconstructor
 from .cis_statistics import DOCXStatistics
 import io
 import json
+from collections import defaultdict
 
 def home(request):
     """Home page view"""
@@ -35,78 +36,107 @@ def handle_multiple_uploads(request):
             if not file.name.endswith('.docx'):
                 return JsonResponse({'error': f'Only .docx files are allowed. Found: {file.name}'}, status=400)
         
-        results = {}
-        doc_rsids = {}  # Map: filename -> set of RSIDs
+        doc_data_list = []
         
         try:
+            # --- First Pass: Extract data and create statistics objects ---
             for file in files:
-                print(f"\nProcessing file: {file.name}")
-                # Read file content into memory
                 file_content = file.read()
-                
-                # Create a BytesIO object to simulate a file
                 file_obj = io.BytesIO(file_content)
-                
-                # Process the file using Extract class
                 extractor = Extract(file_obj)
-                paragraphs = extractor.get_paragraphs()
-                settings_rsids = extractor.get_settings_rsids()
-                metadata = extractor.get_metadata()
-
-
-                # Calculate suspicion score for this file
-                statistics = DOCXStatistics(paragraphs, metadata, settings_rsids)
-                suspicion_score = statistics.calculate_suspicion_score()
-
-                # Convert paragraphs to JSON string
-                json_data = json.dumps(paragraphs, ensure_ascii=False)
                 
-                # Create a StringIO object for JSON data
+                # Gather all relevant data for this document
+                doc_data = {
+                    "filename": file.name,
+                    "paragraphs": extractor.get_paragraphs(),
+                    "settings_rsids": extractor.get_settings_rsids(),
+                    "metadata": extractor.get_metadata(),
+                    "statistics_obj": None # Placeholder for DOCXStatistics
+                }
+                
+                # Create DOCXStatistics object for later analysis
+                doc_data["statistics_obj"] = DOCXStatistics(
+                    doc_data["paragraphs"], doc_data["metadata"], doc_data["settings_rsids"]
+                )
+                doc_data_list.append(doc_data)
+
+            # --- Cross-Document Author Analysis ---
+            # Build a mapping: author -> list of document indices
+            author_to_docs = defaultdict(list)
+            for i, doc_data in enumerate(doc_data_list):
+                author = doc_data["statistics_obj"].get_author()
+                if author:
+                    author_to_docs[author].append(i)
+            
+            # Find authors that appear in more than one document
+            colluding_authors = {author: indices for author, indices in author_to_docs.items() if len(indices) > 1}
+
+            # --- Second Pass: Finalize results with cross-doc insights ---
+            results = {}
+            for i, doc_data in enumerate(doc_data_list):
+                # Calculate the base suspicion score for this document
+                suspicion_result = doc_data["statistics_obj"].calculate_suspicion_score()
+                print(f"[DEBUG] {doc_data['filename']} - After per-document rules: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
+
+                # Cross-document Rule 1: Author appears in multiple documents
+                author = doc_data["statistics_obj"].get_author()
+                if author in colluding_authors:
+                    suspicion_result['total_score'] += 30
+                    suspicion_result['factors'].append(
+                        f"Author '{author}' also appears in other uploaded documents (possible collusion)."
+                    )
+                    print(f"[DEBUG] {doc_data['filename']} - After author collusion: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
+                
+                # Generate HTML for the document
+                json_data = json.dumps(doc_data["paragraphs"], ensure_ascii=False)
                 json_obj = io.StringIO(json_data)
-                
-                # Generate color-coded HTML with document name for unique RSID handling
-                reconstructor = DocumentReconstructor(json_obj, document_name=file.name)
+                reconstructor = DocumentReconstructor(json_obj, document_name=doc_data["filename"])
                 html_content = reconstructor.create_html()
 
-                # Store results for this file
-                results[file.name] = {
+                # Store final results for this document
+                results[doc_data["filename"]] = {
                     'html': html_content,
-                    'data': paragraphs,
-                    'settings_rsids': settings_rsids,
-                    'metadata': metadata,
-                    'metrics': suspicion_score
+                    'data': doc_data["paragraphs"],
+                    'settings_rsids': doc_data["settings_rsids"],
+                    'metadata': doc_data["metadata"],
+                    'metrics': suspicion_result
                 }
 
-                # Collect RSIDs for this document
-                doc_rsids[file.name] = set(rsid['value'] for rsid in settings_rsids.get('rsids', []))
-                print(f"Found {len(doc_rsids[file.name])} unique RSIDs in {file.name}")
-
-            # Build mapping from RSID to set of documents
-            from collections import defaultdict
+            # --- Cross-Document RSID Analysis ---
+            # Build a mapping: filename -> set of RSIDs in that document
+            doc_rsids = {doc["filename"]: set(rsid['value'] for rsid in doc["settings_rsids"].get('rsids', [])) for doc in doc_data_list}
             rsid_to_docs = defaultdict(set)
             for doc, rsids in doc_rsids.items():
                 for rsid in rsids:
                     rsid_to_docs[rsid].add(doc)
-            
             # Only keep RSIDs that appear in more than one document
             shared_rsids = {rsid: sorted(list(docs)) for rsid, docs in rsid_to_docs.items() if len(docs) > 1}
 
-            print("\n========== DEBUG: SHARED RSIDs ANALYSIS ==========")
-            if shared_rsids:
-                print(f"Found {len(shared_rsids)} RSIDs that appear in multiple documents:")
-                for rsid, documents in shared_rsids.items():
-                    print(f"\nRSID: {rsid}")
-                    print(f"Appears in {len(documents)} documents:")
-                    for doc in documents:
-                        print(f"  - {doc}")
-            else:
-                print("No shared RSIDs found between documents.")
-            print("===============================================\n")
+            # Build a mapping: doc_name -> set of shared RSIDs it contains
+            doc_to_shared_rsids = {doc: set() for doc in results}
+            for rsid, docs in shared_rsids.items():
+                for doc in docs:
+                    doc_to_shared_rsids[doc].add(rsid)
 
+            # Cross-document Rule 2: RSID(s) appear in multiple documents
+            for doc_name, shared in doc_to_shared_rsids.items():
+                if shared:
+                    results[doc_name]['metrics']['total_score'] += 30
+                    results[doc_name]['metrics']['factors'].append(
+                        f"RSID(s) {', '.join(shared)} appear in multiple documents (possible collusion)."
+                    )
+                    print(f"[DEBUG] {doc_name} - After RSID collusion: total_score={results[doc_name]['metrics']['total_score']}, factors={results[doc_name]['metrics']['factors']}")
 
-            print("suspicion_score: \n")
-            for i in suspicion_score:
-                print(f"{i}: {suspicion_score[i]}")
+            # Print final suspicion scores and factors for each document
+            for doc_name, result in results.items():
+                print(f"[DEBUG] FINAL {doc_name} - Total Score: {result['metrics']['total_score']}")
+                print(f"[DEBUG] FINAL {doc_name} - Factors: {result['metrics']['factors']}")
+
+            # --- Recalculate normalized score after all rules applied ---
+            # Adjust this if you add/remove rules or change their weights
+            max_possible_score = sum([15, 25, 15, 25, 30, 30])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, author collusion, RSID collusion
+            for doc_name, result in results.items():
+                result['metrics']['score'] = round((result['metrics']['total_score'] / max_possible_score) * 100, 2)
 
             # Return results for all files, and shared RSIDs
             return JsonResponse({
@@ -116,9 +146,6 @@ def handle_multiple_uploads(request):
             }, status=200)
 
         except Exception as e:
-            print(f"\nERROR: {str(e)}")
-            return JsonResponse({
-                'error': f'Error processing files: {str(e)}'
-            }, status=500)
+            return JsonResponse({'error': f'Error processing files: {str(e)}'}, status=500)
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
