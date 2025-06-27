@@ -4,8 +4,7 @@ from collections import defaultdict
 
 class DOCXStatistics:
     """
-    Performs statistical analysis on document data extracted by the Extract class.
-    Computes averages and distributions of characters per RSID and per run.
+    Performs statistical analysis on document data extracted
     """
 
     def __init__(self, paragraphs, metadata, settings_rsids):
@@ -117,60 +116,97 @@ class DOCXStatistics:
                 
         return short_count
 
-    def calculate_suspicion_score(self):
-        print("\n\n\n\n HERE calcualtes suspicion score")
+    def _calculate_iqr_outliers(self, data):
         """
-        Calculates a suspicion score based on the following rules:
-        1. Different Author and Modifier.
-        2. Missing Metadata.
-        3. High Average Characters Per RSID.
+        Calculates outliers in a list of data using the IQR method.
+        Returns the upper bound threshold and a list of the outlier values.
+        """
+        if not data:
+            return 0, []
+
+        # Sort the data to find quartiles
+        sorted_data = sorted(data)
+        
+        # Calculate Q1 and Q3
+        q1_index = int(len(sorted_data) * 0.25)
+        q3_index = int(len(sorted_data) * 0.75)
+        q1 = sorted_data[q1_index]
+        q3 = sorted_data[q3_index]
+        
+        # Calculate IQR
+        iqr = q3 - q1
+        
+        # Define the upper bound for outliers
+        upper_bound = q3 + (1.5 * iqr)
+        
+        # Find outliers
+        outliers = [d for d in data if d > upper_bound]
+        
+        return upper_bound, outliers
+
+    def calculate_suspicion_score(self):
+        """
+        Calculates a suspicion score based on a set of rules.
         """
         # Rule weights
         SUSPICION_RULES = {
-            "different_author": 20,
+            "different_author": 15,
+            "modified_before_created": 25,
             "missing_metadata": 15,
-            "high_avg_chars_per_rsid": 25,
+            "long_run_outlier": 25, # Renamed from high_avg_chars_per_rsid
         }
 
         # Initialize variables
         score = 0
         factors = []
 
-        # Get metadata from the nested structure
-        docx_core_props = self.metadata.get('docx_core_properties', {})
-        core_props = self.metadata.get('core_properties', {})
-        
-        # Rule 1: Different Author and Modifier
-        created_by = docx_core_props.get('author') or core_props.get('creator')
-        modified_by = docx_core_props.get('last_modified_by') or core_props.get('lastModifiedBy')
-        
-        if created_by and modified_by and created_by != modified_by:
+        # Get metadata using helper methods
+        author = self.get_author()
+        last_modified_by = self.get_last_modified_by()
+        created_time = self.get_created()
+        revision = self.get_revision()
+
+        # --- Rule 1: Different Author and Modifier ---
+        if author and last_modified_by and author != last_modified_by:
             score += SUSPICION_RULES["different_author"]
-            factors.append("Created By and Last Modified By are different.")
+            factors.append("Author and Last Modified By are different.")
 
-        # Rule 2: Missing Metadata
-        required_metadata = ["author", "last_modified_by", "revision"]
-        missing_metadata = [
-            field for field in required_metadata 
-            if not docx_core_props.get(field) and not core_props.get(field)
-        ]
-        if missing_metadata:
+        # --- Rule 2: Last Modified By is earlier than Creation Time ---
+        if last_modified_by and created_time and created_time > self.metadata.get('docx_core_properties', {}).get('modified', created_time):
+            score += SUSPICION_RULES["modified_before_created"]
+            factors.append("Document was last modified before it was created.")
+
+        # --- Rule 3: Missing Metadata ---
+        missing_fields = []
+        if not author:
+            missing_fields.append("Author")
+        if not last_modified_by:
+            missing_fields.append("Last Modified By")
+        if not revision:
+            missing_fields.append("Revision")
+        
+        if missing_fields:
             score += SUSPICION_RULES["missing_metadata"]
-            factors.append(f"Missing Metadata: {', '.join(missing_metadata)}.")
+            factors.append(f"Missing key metadata: {', '.join(missing_fields)}.")
 
-        # Rule 3: High Average Characters Per RSID
-        rsid_count = len(self.char_per_unique_rsid)
-        total_chars = sum(self.char_per_unique_rsid)
-        avg_chars_per_rsid = total_chars / rsid_count if rsid_count > 0 else 0
-        if avg_chars_per_rsid > 200:  # Threshold: 200 characters per RSID
-            score += SUSPICION_RULES["high_avg_chars_per_rsid"]
+        # --- Rule 4: Long Run Outlier Detection (Method 3) ---
+        # Get character counts for every run in the document
+        run_char_counts = self.get_list_char_per_run()
+        
+        # Calculate the outlier threshold and find any long runs
+        threshold, long_runs = self._calculate_iqr_outliers(run_char_counts)
+        
+        if long_runs:
+            score += SUSPICION_RULES["long_run_outlier"]
+            # To avoid clutter, you might only report the number of outliers and the threshold
             factors.append(
-                f"High Average Characters Per RSID: {avg_chars_per_rsid:.2f} (Threshold: 200)"
+                f"{len(long_runs)} unusually long text run(s) detected "
+                f"(over {threshold:.0f} chars), suggesting copy-paste."
             )
 
         # Normalize score (0-100 scale)
         max_possible_score = sum(SUSPICION_RULES.values())
-        normalized_score = (score / max_possible_score) * 100
+        normalized_score = (score / max_possible_score) * 100 if max_possible_score > 0 else 0
 
         # Calculate atomic statistics components
         total_characters = sum(self.char_per_unique_rsid)
@@ -178,7 +214,6 @@ class DOCXStatistics:
         total_run_characters = sum(self.char_per_run)
         unique_rsid_count = len(self.char_per_unique_rsid)
         
-        # Calculate averages for reference (but also provide atomic components)
         avg_chars_per_rsid = total_characters / unique_rsid_count if unique_rsid_count > 0 else 0
         avg_chars_per_run = total_run_characters / total_runs if total_runs > 0 else 0
 
@@ -195,12 +230,53 @@ class DOCXStatistics:
                 "total_runs_count": total_runs,
                 "unique_rsid_count": unique_rsid_count,
 
-
-
                 # Calculated averages (for reference)
                 "average_chars_per_rsid": round(avg_chars_per_rsid, 2),
                 "average_chars_per_run": round(avg_chars_per_run, 2),
                 "average_words_per_rsid": round(self.word_count / unique_rsid_count, 2) if unique_rsid_count > 0 else 0,
                 "average_words_per_run": round(self.word_count / total_runs, 2) if total_runs > 0 else 0,
             }
+        }
+
+    def get_author(self):
+        """
+        Returns the author/creator of the document from metadata.
+        """
+        docx_core_props = self.metadata.get('docx_core_properties', {})
+        core_props = self.metadata.get('core_properties', {})
+        return docx_core_props.get('author') or core_props.get('creator')
+
+    def get_last_modified_by(self):
+        """
+        Returns the last_modified_by of the document from metadata.
+        """
+        docx_core_props = self.metadata.get('docx_core_properties', {})
+        core_props = self.metadata.get('core_properties', {})
+        return docx_core_props.get('last_modified_by') or core_props.get('lastModifiedBy')
+
+    def get_created(self):
+        """
+        Returns the creation time of the document from metadata.
+        """
+        docx_core_props = self.metadata.get('docx_core_properties', {})
+        core_props = self.metadata.get('core_properties', {})
+        return docx_core_props.get('created') or core_props.get('created')
+
+    def get_revision(self):
+        """
+        Returns the revision number of the document from metadata.
+        """
+        docx_core_props = self.metadata.get('docx_core_properties', {})
+        core_props = self.metadata.get('core_properties', {})
+        return docx_core_props.get('revision') or core_props.get('revision')
+
+    def get_metadata_summary(self):
+        """
+        Returns a summary dictionary of key metadata fields.
+        """
+        return {
+            'author': self.get_author(),
+            'last_modified_by': self.get_last_modified_by(),
+            'created': self.get_created(),
+            'revision': self.get_revision(),
         }
