@@ -13,6 +13,9 @@ def home(request):
     """Home page view"""
     return render(request, 'app/home.html')
 
+def dashboard_page(request):
+    return render(request, 'app/dashboard.html')
+
 
 def upload_page(request):
     return render(request, 'app/upload.html')

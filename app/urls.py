@@ -5,6 +5,7 @@ app_name = 'app'
 
 urlpatterns = [
     path('', views.home, name='home'),
+    path('dashboard/', views.dashboard_page, name='dashboard_page'),
     path('upload/', views.upload_page, name='upload_page'),
     path('upload/files/', views.handle_multiple_uploads, name='handle_multiple_uploads'),
 ] 

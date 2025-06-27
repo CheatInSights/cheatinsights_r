@@ -1,29 +1,753 @@
-<div>
-    <canvas id="myChart"></canvas>
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'styles.css' %}">
+
+  <style>
+    /* Override any body padding that might be applied */
+    html,
+    body {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    body {
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .upload-area {
+      border: 2px dashed var(--primary-color);
+      border-radius: 10px;
+      padding: 2rem;
+      text-align: center;
+      background-color: #f8f9fa;
+      transition: all 0.3s ease;
+    }
+
+    .upload-area:hover {
+      background-color: #e9ecef;
+      border-color: var(--secondary-color);
+    }
+
+    .upload-area.dragover {
+      background-color: #e9ecef;
+      border-color: var(--secondary-color);
+    }
+
+    .file-input {
+      display: none;
+    }
+
+    .upload-icon {
+      font-size: 3rem;
+      color: var(--primary-color);
+      margin-bottom: 1rem;
+    }
+
+    .upload-progress {
+      display: none;
+      margin-top: 1rem;
+    }
+
+    #results {
+      display: none;
+    }
+
+    /* Graph container styles */
+    #graphContainer {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .chart-wrapper {
+      max-width: 800px;
+      max-height: 600px;
+      margin: 20px auto;
+      padding: 15px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background: white;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .chart-canvas {
+      max-width: 100% !important;
+      max-height: 500px !important;
+      width: 100% !important;
+      height: 400px !important;
+    }
+
+    /* File list styles */
+    .file-list {
+      margin-top: 1rem;
+      max-height: 40vh;
+      height: auto;
+      overflow-y: scroll;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 0.5rem;
+      background: white;
+    }
+
+    .file-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.5rem;
+      border-bottom: 1px solid #f8f9fa;
+      font-size: 0.9rem;
+    }
+
+    .file-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-name {
+      flex: 1;
+      margin-right: 1rem;
+    }
+
+    .file-size {
+      color: #6c757d;
+      font-size: 0.8rem;
+    }
+
+    .remove-file {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 0.2rem 0.5rem;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+
+    .remove-file:hover {
+      background: #c82333;
+    }
+
+    /* Document reconstruction styles */
+    .reconstructed-document {
+      font-family: Arial, sans-serif;
+      line-height: 1.4;
+      width: 50%;
+      /* margin: 0 auto; */
+      padding: 5%;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .paragraph {
+      margin-bottom: 0.5em;
+      position: relative;
+      min-height: 1.2em;
+    }
+
+    .run {
+      display: inline;
+      border-radius: 2px;
+      padding: 0 2px;
+    }
+
+    .paragraph-id {
+      position: absolute;
+      left: -150px;
+      color: #999;
+      font-size: 0.8em;
+    }
+
+    .empty-paragraph {
+      border-left: 2px solid #ddd;
+      padding-left: 10px;
+      margin-left: 5px;
+      margin-bottom: 0.3em;
+    }
+
+    .empty-paragraph::before {
+      content: "¶";
+      color: #999;
+      font-size: 0.8em;
+      margin-right: 5px;
+    }
+
+    .document-controls {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: #f8f9fa;
+      border-radius: 8px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 0.9em;
+    }
+
+    .legend-color {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      margin-right: 0.5rem;
+    }
+
+    /* File system table styles */
+    .files-container {
+      margin-bottom: 1rem;
+    }
+
+    .files-header h3 {
+      color: #495057;
+      font-weight: 600;
+    }
+
+    .files-table-container {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      overflow: scroll;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      max-height: 90vh;
+    }
+
+    .files-table {
+      margin-bottom: 0;
+      font-size: 0.9rem;
+      flex: 1;
+
+    }
+
+    .files-table thead {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: white;
+    }
+
+    .files-table tbody {
+      overflow-y: auto;
+      max-height: calc(60vh - 50px); /* Subtract approximate header height */
+    }
+
+    .files-table th {
+      background: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      font-weight: 600;
+      color: #495057;
+      padding: 12px 8px;
+      white-space: nowrap;
+    }
+
+    .files-table td {
+      padding: 12px 8px;
+      vertical-align: middle;
+      border-bottom: 1px solid #f1f3f4;
+    }
+
+    .files-table tbody tr:hover {
+      background-color: #f8f9fa;
+      cursor: pointer;
+    }
+
+    .files-table tbody tr.active {
+      background-color: #e3f2fd;
+      border-left: 4px solid #2196f3;
+    }
+
+    .file-filename {
+      font-weight: 500;
+      color: #2196f3;
+    }
+
+    .file-creator, .file-modified-by {
+      color: #6c757d;
+      font-size: 0.85rem;
+    }
+
+    .file-date {
+      color: #6c757d;
+      font-size: 0.85rem;
+      white-space: nowrap;
+    }
+
+    .file-suspicion-score {
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .file-suspicion-score.high {
+      color: #dc3545;
+    }
+
+    .file-suspicion-score.medium {
+      color: #ffc107;
+    }
+
+    .file-suspicion-score.low {
+      color: #28a745;
+    }
+
+    .file-actions {
+      text-align: center;
+    }
+
+    .file-actions .btn {
+      padding: 4px 8px;
+      font-size: 0.8rem;
+    }
+
+    /* Remove old document-tabs styles */
+    .document-tabs {
+      margin-bottom: 1rem;
+    }
+
+    .document-tab {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      margin-right: 0.5rem;
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 5px 5px 0 0;
+      cursor: pointer;
+      text-decoration: none;
+      color: #495057;
+    }
+
+    .document-tab.active {
+      background: white;
+      border-bottom-color: white;
+      font-weight: bold;
+    }
+
+    .document-content {
+      display: none;
+    }
+
+    .document-content.active {
+      display: block;
+    }
+
+    /* RSID List Styles */
+    .rsid-list {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    .rsid-stats {
+      font-size: 0.9em;
+      color: #666;
+      padding: 5px;
+      background: #f8f9fa;
+      border-radius: 3px;
+      margin-bottom: 0px;
+    }
+
+    .rsid-table {
+      font-size: 0.85em;
+    }
+
+    .rsid-table th {
+      position: sticky;
+      top: 0;
+      background: white;
+      z-index: 1;
+    }
+
+    .rsid-highlight {
+      background-color: #e9ecef;
+      border: 2px solid #007bff !important;
+      border-radius: 3px;
+      padding: 1px 3px;
+      font-weight: bold;
+    }
+
+    .rsid-action-btn {
+      padding: 2px 5px;
+      font-size: 0.8em;
+      margin: 0 2px;
+      white-space: nowrap;
+      display: inline-block;
+      width: auto;
+      min-width: 60px;
+    }
+
+    /* Ensure table cells with buttons don't wrap */
+    .rsid-table td:last-child {
+      white-space: nowrap;
+      min-width: 140px;
+    }
+
+    /* Make buttons more compact */
+    .rsid-table .btn-sm {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.75rem;
+      line-height: 1.2;
+    }
+
+    /* Metadata List Styles */
+    .metadata-list {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+      padding: 10px;
+      font-size: 0.85em;
+    }
+
+    .metadata-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 4px 0;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .metadata-item:last-child {
+      border-bottom: none;
+    }
+
+    .metadata-key {
+      font-weight: bold;
+      color: #495057;
+      padding-right: 10px;
+      white-space: nowrap;
+    }
+
+    .metadata-value {
+      color: #6c757d;
+      text-align: right;
+      word-break: break-all;
+    }
+
+    .metadata-section {
+      margin-bottom: 10px;
+      border: 1px solid #eee;
+      border-radius: 4px;
+      background: #fafbfc;
+    }
+
+    .metadata-section-header {
+      font-weight: bold;
+      background: #f1f3f4;
+      padding: 6px 10px;
+      cursor: pointer;
+      border-bottom: 1px solid #eee;
+      user-select: none;
+    }
+
+    .metadata-section-content {
+      padding: 6px 10px;
+    }
+
+    /* Metadata List Styles */
+    .shared-rsids-section {
+      margin-top: 1.5em;
+      padding: 1em;
+      background: #f8f9fa;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+    }
+
+    .shared-rsids-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .shared-rsids-table th,
+    .shared-rsids-table td {
+      border: 1px solid #ccc;
+      padding: 0.4em 0.7em;
+      text-align: left;
+    }
+
+    .shared-rsids-table th {
+      background: #f0f0f0;
+    }
+
+    /* Suspicion Score Styles */
+    .suspicion-score-container {
+      background: #f8f9fa;
+      /* border-radius: 8px; */
+      /* padding: 20px; */
+      margin-top: 15px;
+    }
+
+    .score-display {
+      text-align: center;
+      margin-bottom: 20px;
+      padding: 15px;
+      background: white;
+      border-radius: 6px;
+      border: 2px solid #e9ecef;
+    }
+
+    .main-score {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .score-value {
+      color: #dc3545;
+      font-size: 28px;
+    }
+
+    .total-score {
+      font-size: 14px;
+      color: #6c757d;
+    }
+
+    .factors-section {
+      margin-bottom: 20px;
+    }
+
+    .factors-section h4 {
+      color: #495057;
+      margin-bottom: 10px;
+      font-size: 16px;
+    }
+
+    .factors-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .factors-list li {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      border-radius: 4px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      color: #856404;
+      font-size: 14px;
+    }
+
+    .statistics-section h4 {
+      color: #495057;
+      margin-bottom: 15px;
+      font-size: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+
+    .stat-item {
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-weight: 500;
+      color: #495057;
+      font-size: 14px;
+    }
+
+    .stat-value {
+      font-weight: bold;
+      color: #007bff;
+      font-size: 14px;
+    }
+
+    .demo {
+      border: solid 2px red;
+    }
+
+    .menu1 {
+      background-color: #B8B8B8;
+      padding: 50px;
+      max-height: 100vh;
+    }
+
+    .menu1 .btn {
+      transition: all 0.3s ease;
+    }
+
+    .menu1 .btn.active {
+      background-color: #007bff !important;
+      color: white !important;
+      border-color: #007bff !important;
+      box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+    }
+
+    .menu1 .btn:hover:not(.active) {
+      background-color: #e9ecef !important;
+      border-color: #adb5bd !important;
+    }
+
+    .menu2 {
+      background-color: #B8B8B8;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .main_content {
+      background-color: rgb(217, 217, 217);
+      padding: 20px;
+      max-height: 100vh;
+    }
+
+    /* Content sections - hidden by default, controlled display */
+    .main_content > div {
+      display: none;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    /* Singleview page - special overflow handling */
+    .main_content > div:nth-child(3) {
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+  </style>
+
+</head>
+
+
+<body>
+  <div class="container-liquid">
+    <div class="row g-0">
+      <div class="col-2 menu1 border border-secondary">
+        <div class="row ">
+          <div class="w-100 mt-5  text-center ">CheatInSights</div>
+          <button id="upload_button" type="button" class="btn btn-light w-100 mt-5">Upload</button>
+          <button id="files_button" type="button" class="btn btn-light w-100 mt-5">Files</button>
+          <button id="singleview_button" type="button" class="btn btn-light w-100 mt-5">Focus</button>
+          <button id="graphs_button" type="button" class="btn btn-light w-100 mt-5">Graphs</button>
+          <button id="signout_button" type="button" class="btn btn-light w-100 mt-5">Sign Out</button>
+        </div>
+
+
+
+      </div>
+      <div class="col-8 main_content ">
+        {% include 'app/upload_page.html' %}
+        {% include 'app/files_page.html' %}
+        {% include 'app/singleview_page.html' %}
+        {% include 'app/graphs_page.html' %}
+        
+
+      </div>
+      <div class="col-2 menu2 border border-secondary ">
+        {% include 'app/utilitybar.html' %}
+        
+      </div>
+    </div>
+
+
   </div>
-  
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  
+
   <script>
-    const ctx = document.getElementById('myChart');
-  
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-        datasets: [{
-          label: '# of Votes',
-          data: [12, 19, 3, 5, 2, 3],
-          borderWidth: 1
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            beginAtZero: true
-          }
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+
+      const uploadButton = document.getElementById('upload_button');
+      const filesButton = document.getElementById('files_button');
+      const singleviewButton = document.getElementById('singleview_button');
+      const graphsButton = document.getElementById('graphs_button');
+      
+      console.log('Upload button:', document.getElementById('upload_button'));
+      console.log('Files button:', document.getElementById('files_button'));
+      console.log('Graphs button:', document.getElementById('graphs_button'));
+
+      const uploadSection = document.querySelector('div.main_content > div:nth-child(1)');
+      const filesSection = document.querySelector('div.main_content > div:nth-child(2)');
+      const singleviewSection = document.querySelector('div.main_content > div:nth-child(3)');
+      const graphsSection = document.querySelector('div.main_content > div:nth-child(4)');
+
+      // Function to remove active class from all buttons
+      function removeActiveFromAllButtons() {
+        uploadButton.classList.remove('active');
+        filesButton.classList.remove('active');
+        singleviewButton.classList.remove('active');
+        graphsButton.classList.remove('active');
       }
+
+      uploadButton.addEventListener('click', function () {
+        console.log("Action: clicked Upload Button");
+        removeActiveFromAllButtons();
+        uploadButton.classList.add('active');
+        
+        uploadSection.style.display = 'block';
+        filesSection.style.display = 'none';
+        singleviewSection.style.display = 'none';
+        graphsSection.style.display = 'none';
+      });
+
+      filesButton.addEventListener('click', function () {
+        console.log("Action: clicked Files Button");
+        removeActiveFromAllButtons();
+        filesButton.classList.add('active');
+        
+        uploadSection.style.display = 'none';
+        filesSection.style.display = 'block';
+        singleviewSection.style.display = 'none';
+        graphsSection.style.display = 'none';
+      });
+
+      singleviewButton.addEventListener('click', function () {
+        console.log("Action: clicked Singleview Button");
+        removeActiveFromAllButtons();
+        singleviewButton.classList.add('active');
+        
+        uploadSection.style.display = 'none';
+        filesSection.style.display = 'none';
+        singleviewSection.style.display = 'block';
+        graphsSection.style.display = 'none';
+      });
+
+      graphsButton.addEventListener('click', function () {
+        console.log("Action: clicked Graphs Button");
+        removeActiveFromAllButtons();
+        graphsButton.classList.add('active');
+        
+        uploadSection.style.display = 'none';
+        filesSection.style.display = 'none';
+        singleviewSection.style.display = 'none';
+        graphsSection.style.display = 'block';
+      });
+
+      // Initialize by showing only the upload section and setting active state
+      uploadSection.style.display = 'block';
+      filesSection.style.display = 'none';
+      singleviewSection.style.display = 'none';
+      graphsSection.style.display = 'none';
+      
+      // Set initial active button
+      uploadButton.classList.add('active');
     });
   </script>
-   
+  <script src="{% static 'upload_page.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+</body>
+
+</html>
