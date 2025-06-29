@@ -1,0 +1,607 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}Documentation - CheatInSights{% endblock %}
+
+{% block extra_css %}
+<style>
+    .doc-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+
+    .doc-sidebar {
+        position: sticky;
+        top: 20px;
+        height: fit-content;
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 30px;
+    }
+
+    .doc-sidebar h5 {
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 10px;
+        margin-bottom: 15px;
+    }
+
+    .doc-sidebar ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .doc-sidebar li {
+        margin-bottom: 8px;
+    }
+
+    .doc-sidebar a {
+        color: #6c757d;
+        text-decoration: none;
+        padding: 5px 0;
+        display: block;
+        transition: color 0.3s ease;
+    }
+
+    .doc-sidebar a:hover {
+        color: #4f46e5;
+    }
+
+    .doc-sidebar a.active {
+        color: #4f46e5;
+        font-weight: 600;
+    }
+
+    .doc-content {
+        background: white;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .doc-section {
+        margin-bottom: 40px;
+        scroll-margin-top: 100px;
+    }
+
+    .doc-section h2 {
+        color: #2c3e50;
+        border-bottom: 3px solid #4f46e5;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .doc-section h3 {
+        color: #34495e;
+        margin-top: 30px;
+        margin-bottom: 15px;
+    }
+
+    .doc-section h4 {
+        color: #495057;
+        margin-top: 25px;
+        margin-bottom: 10px;
+    }
+
+    .code-block {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 6px;
+        padding: 15px;
+        margin: 15px 0;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        overflow-x: auto;
+    }
+
+    .info-box {
+        background: #e3f2fd;
+        border-left: 4px solid #2196f3;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 4px;
+    }
+
+    .warning-box {
+        background: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 4px;
+    }
+
+    .success-box {
+        background: #d4edda;
+        border-left: 4px solid #28a745;
+        padding: 15px;
+        margin: 15px 0;
+        border-radius: 4px;
+    }
+
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin: 20px 0;
+    }
+
+    .feature-card {
+        background: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 20px;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .feature-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .feature-card h5 {
+        color: #4f46e5;
+        margin-bottom: 10px;
+    }
+
+    .step-list {
+        counter-reset: step-counter;
+        list-style: none;
+        padding: 0;
+    }
+
+    .step-list li {
+        counter-increment: step-counter;
+        margin-bottom: 15px;
+        padding-left: 50px;
+        position: relative;
+    }
+
+    .step-list li::before {
+        content: counter(step-counter);
+        position: absolute;
+        left: 0;
+        top: 0;
+        background: #4f46e5;
+        color: white;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+    }
+
+    .table-responsive {
+        margin: 20px 0;
+    }
+
+    .table th {
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+    }
+
+    @media (max-width: 768px) {
+        .doc-sidebar {
+            position: static;
+            margin-bottom: 20px;
+        }
+        
+        .doc-content {
+            padding: 20px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="doc-container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="doc-sidebar">
+                <h5>Documentation</h5>
+                <ul>
+                    <li><a href="#getting-started" class="nav-link">Getting Started</a></li>
+                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#uploading-documents" class="nav-link">Uploading Documents</a></li>
+                    <li><a href="#understanding-results" class="nav-link">Understanding Results</a></li>
+                    <li><a href="#suspicion-scoring" class="nav-link">Suspicion Scoring</a></li>
+                    <li><a href="#rsid-analysis" class="nav-link">RSID Analysis</a></li>
+                    <li><a href="#cross-document-analysis" class="nav-link">Cross-Document Analysis</a></li>
+                    <li><a href="#troubleshooting" class="nav-link">Troubleshooting</a></li>
+                    <li><a href="#api-reference" class="nav-link">API Reference</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-lg-9">
+            <div class="doc-content">
+                <!-- Getting Started -->
+                <div id="getting-started" class="doc-section">
+                    <h2>Getting Started</h2>
+                    <p>Welcome to CheatInSights! This platform helps you analyze Microsoft Word documents for potential academic integrity issues by examining document metadata, RSID patterns, and cross-document similarities.</p>
+                    
+                    <div class="info-box">
+                        <strong>What is CheatInSights?</strong><br>
+                        CheatInSights is an advanced document analysis tool that uses sophisticated algorithms to detect potential plagiarism, collusion, and other academic integrity violations in Microsoft Word documents.
+                    </div>
+
+                    <h3>Quick Start Guide</h3>
+                    <ol class="step-list">
+                        <li>Upload one or more .docx files using the upload interface</li>
+                        <li>Wait for the analysis to complete (usually takes a few seconds)</li>
+                        <li>Review the suspicion scores and detailed analysis results</li>
+                        <li>Examine RSID patterns and cross-document similarities</li>
+                        <li>Use the interactive features to explore document content</li>
+                    </ol>
+                </div>
+
+                <!-- Features -->
+                <div id="features" class="doc-section">
+                    <h2>Features</h2>
+                    <div class="feature-grid">
+                        <div class="feature-card">
+                            <h5>📊 Suspicion Scoring</h5>
+                            <p>Advanced algorithms calculate suspicion scores based on multiple factors including metadata inconsistencies, RSID patterns, and document anomalies.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h5>🔍 RSID Analysis</h5>
+                            <p>Deep analysis of Revision Session IDs to detect copy-paste operations and identify unusual editing patterns.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h5>📋 Cross-Document Analysis</h5>
+                            <p>Compare multiple documents to identify shared authors, RSIDs, and potential collusion between students.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h5>📈 Statistical Analysis</h5>
+                            <p>Comprehensive statistical analysis including character counts, word counts, and paragraph analysis.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h5>🎨 Interactive Visualization</h5>
+                            <p>Interactive charts and graphs to visualize document patterns and statistical distributions.</p>
+                        </div>
+                        <div class="feature-card">
+                            <h5>📱 Responsive Interface</h5>
+                            <p>Modern, responsive web interface that works on desktop, tablet, and mobile devices.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Uploading Documents -->
+                <div id="uploading-documents" class="doc-section">
+                    <h2>Uploading Documents</h2>
+                    <p>CheatInSights supports Microsoft Word documents (.docx format) for analysis. Here's how to upload your documents:</p>
+
+                    <h3>Supported File Formats</h3>
+                    <ul>
+                        <li><strong>.docx</strong> - Microsoft Word documents (recommended)</li>
+                        <li><strong>Multiple files</strong> - Upload up to 10 documents simultaneously</li>
+                    </ul>
+
+                    <div class="warning-box">
+                        <strong>Important:</strong> Only .docx files are supported. .doc files (older Word format) are not compatible.
+                    </div>
+
+                    <h3>Upload Process</h3>
+                    <ol class="step-list">
+                        <li>Navigate to the upload page or dashboard</li>
+                        <li>Click "Choose Files" or drag and drop files into the upload area</li>
+                        <li>Select one or more .docx files from your computer</li>
+                        <li>Click "Upload" to begin the analysis</li>
+                        <li>Wait for processing to complete (progress bar will show status)</li>
+                    </ol>
+
+                    <h3>File Size Limits</h3>
+                    <ul>
+                        <li>Maximum file size: 50MB per file</li>
+                        <li>Maximum total upload: 500MB</li>
+                        <li>Recommended: Keep files under 10MB for faster processing</li>
+                    </ul>
+                </div>
+
+                <!-- Understanding Results -->
+                <div id="understanding-results" class="doc-section">
+                    <h2>Understanding Results</h2>
+                    <p>After uploading documents, CheatInSights provides comprehensive analysis results across multiple views:</p>
+
+                    <h3>Dashboard Overview</h3>
+                    <p>The main dashboard shows:</p>
+                    <ul>
+                        <li><strong>File List:</strong> All uploaded documents with metadata and suspicion scores</li>
+                        <li><strong>Suspicion Scores:</strong> Percentage-based scores indicating potential issues</li>
+                        <li><strong>Document Statistics:</strong> Character counts, word counts, and other metrics</li>
+                        <li><strong>Cross-Document Analysis:</strong> Shared authors and RSIDs between documents</li>
+                    </ul>
+
+                    <h3>Document Views</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>View</th>
+                                    <th>Purpose</th>
+                                    <th>Features</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Files</strong></td>
+                                    <td>Overview of all documents</td>
+                                    <td>Metadata, scores, search, filter</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Focus</strong></td>
+                                    <td>Detailed single document analysis</td>
+                                    <td>RSID highlighting, metadata, reconstruction</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Graphs</strong></td>
+                                    <td>Statistical visualizations</td>
+                                    <td>Charts, distributions, comparisons</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Suspicion Scoring -->
+                <div id="suspicion-scoring" class="doc-section">
+                    <h2>Suspicion Scoring</h2>
+                    <p>CheatInSights uses a sophisticated scoring system to identify potential academic integrity issues:</p>
+
+                    <h3>Scoring Factors</h3>
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Factor</th>
+                                    <th>Weight</th>
+                                    <th>Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Different Author/Modifier</td>
+                                    <td>15 points</td>
+                                    <td>Author and last modified by are different people</td>
+                                </tr>
+                                <tr>
+                                    <td>Modified Before Created</td>
+                                    <td>25 points</td>
+                                    <td>Document was modified before its creation date</td>
+                                </tr>
+                                <tr>
+                                    <td>Missing Metadata</td>
+                                    <td>15 points</td>
+                                    <td>Key metadata fields are missing or empty</td>
+                                </tr>
+                                <tr>
+                                    <td>Long Run Outliers</td>
+                                    <td>25 points</td>
+                                    <td>Unusually long text runs suggesting copy-paste</td>
+                                </tr>
+                                <tr>
+                                    <td>Author Collusion</td>
+                                    <td>30 points</td>
+                                    <td>Same author appears in multiple documents</td>
+                                </tr>
+                                <tr>
+                                    <td>RSID Collusion</td>
+                                    <td>30 points</td>
+                                    <td>Same RSIDs appear in multiple documents</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <h3>Score Interpretation</h3>
+                    <div class="feature-grid">
+                        <div class="success-box">
+                            <strong>0-30% (Low Risk)</strong><br>
+                            Document appears to be original work with minimal suspicious indicators.
+                        </div>
+                        <div class="warning-box">
+                            <strong>31-70% (Medium Risk)</strong><br>
+                            Some suspicious indicators detected. Review recommended.
+                        </div>
+                        <div class="info-box" style="background: #f8d7da; border-left-color: #dc3545;">
+                            <strong>71-100% (High Risk)</strong><br>
+                            Multiple suspicious indicators detected. Thorough investigation recommended.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RSID Analysis -->
+                <div id="rsid-analysis" class="doc-section">
+                    <h2>RSID Analysis</h2>
+                    <p>Revision Session IDs (RSIDs) are unique identifiers that Microsoft Word assigns to text runs. They provide valuable insights into document creation patterns:</p>
+
+                    <h3>What are RSIDs?</h3>
+                    <p>RSIDs are 32-character hexadecimal strings that identify when and how text was created or modified. Each text run in a Word document has an associated RSID.</p>
+
+                    <h3>RSID Analysis Features</h3>
+                    <ul>
+                        <li><strong>RSID Highlighting:</strong> Visually highlight all text with the same RSID</li>
+                        <li><strong>RSID Statistics:</strong> Count and analyze RSID patterns</li>
+                        <li><strong>Cross-Document RSID Matching:</strong> Find shared RSIDs between documents</li>
+                        <li><strong>RSID Timeline Analysis:</strong> Understand document creation sequence</li>
+                    </ul>
+
+                    <h3>Interpreting RSID Patterns</h3>
+                    <div class="info-box">
+                        <strong>Normal Pattern:</strong> Multiple RSIDs with reasonable character distributions
+                    </div>
+                    <div class="warning-box">
+                        <strong>Suspicious Pattern:</strong> Very few RSIDs with large character counts (suggesting copy-paste)
+                    </div>
+                </div>
+
+                <!-- Cross-Document Analysis -->
+                <div id="cross-document-analysis" class="doc-section">
+                    <h2>Cross-Document Analysis</h2>
+                    <p>When multiple documents are uploaded, CheatInSights performs cross-document analysis to detect potential collusion:</p>
+
+                    <h3>Analysis Types</h3>
+                    <ul>
+                        <li><strong>Author Analysis:</strong> Identifies documents with the same author</li>
+                        <li><strong>RSID Analysis:</strong> Finds shared RSIDs between documents</li>
+                        <li><strong>Metadata Comparison:</strong> Compares creation dates, modification patterns</li>
+                        <li><strong>Content Similarity:</strong> Analyzes text patterns and structures</li>
+                    </ul>
+
+                    <h3>Collusion Detection</h3>
+                    <p>The system flags potential collusion when:</p>
+                    <ul>
+                        <li>Same author appears in multiple documents</li>
+                        <li>Same RSIDs are found across different documents</li>
+                        <li>Documents have similar creation/modification patterns</li>
+                        <li>Statistical patterns suggest shared content</li>
+                    </ul>
+                </div>
+
+                <!-- Troubleshooting -->
+                <div id="troubleshooting" class="doc-section">
+                    <h2>Troubleshooting</h2>
+                    <p>Common issues and solutions:</p>
+
+                    <h3>Upload Issues</h3>
+                    <div class="warning-box">
+                        <strong>Problem:</strong> "Only .docx files are allowed"<br>
+                        <strong>Solution:</strong> Convert your .doc file to .docx format using Microsoft Word
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>Problem:</strong> "File too large"<br>
+                        <strong>Solution:</strong> Reduce file size by removing images or splitting into smaller documents
+                    </div>
+
+                    <h3>Analysis Issues</h3>
+                    <div class="warning-box">
+                        <strong>Problem:</strong> "No RSIDs found"<br>
+                        <strong>Solution:</strong> This is normal for very simple documents or documents created in older Word versions
+                    </div>
+
+                    <div class="warning-box">
+                        <strong>Problem:</strong> "Low suspicion score despite concerns"<br>
+                        <strong>Solution:</strong> Review the detailed factors and consider manual inspection
+                    </div>
+
+                    <h3>Performance Issues</h3>
+                    <ul>
+                        <li>Large files may take longer to process</li>
+                        <li>Multiple files are processed sequentially</li>
+                        <li>Browser cache may need clearing for optimal performance</li>
+                    </ul>
+                </div>
+
+                <!-- API Reference -->
+                <div id="api-reference" class="doc-section">
+                    <h2>API Reference</h2>
+                    <p>For developers and advanced users, CheatInSights provides API endpoints for programmatic access:</p>
+
+                    <h3>Upload Endpoint</h3>
+                    <div class="code-block">
+POST /upload/files/
+Content-Type: multipart/form-data
+
+Parameters:
+- documents: Array of .docx files
+- csrfmiddlewaretoken: CSRF token
+
+Response:
+{
+    "message": "Successfully processed X files",
+    "results": {
+        "filename.docx": {
+            "html": "...",
+            "data": [...],
+            "settings_rsids": {...},
+            "metadata": {...},
+            "metrics": {
+                "score": 75.5,
+                "total_score": 85,
+                "factors": [...],
+                "statistics": {...}
+            }
+        }
+    },
+    "shared_rsids": {...}
+}
+                    </div>
+
+                    <h3>Contact Form Endpoint</h3>
+                    <div class="code-block">
+POST /contact/submit/
+Content-Type: application/json
+
+Parameters:
+- firstName, lastName, organization, emailAddress, etc.
+
+Response:
+{
+    "success": true,
+    "message": "Thank you for your message!"
+}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Smooth scrolling for navigation links
+document.addEventListener('DOMContentLoaded', function() {
+    const navLinks = document.querySelectorAll('.doc-sidebar a');
+    
+    navLinks.forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const targetId = this.getAttribute('href').substring(1);
+            const targetElement = document.getElementById(targetId);
+            
+            if (targetElement) {
+                targetElement.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'start'
+                });
+            }
+            
+            // Update active link
+            navLinks.forEach(l => l.classList.remove('active'));
+            this.classList.add('active');
+        });
+    });
+    
+    // Update active link on scroll
+    window.addEventListener('scroll', function() {
+        const sections = document.querySelectorAll('.doc-section');
+        const navLinks = document.querySelectorAll('.doc-sidebar a');
+        
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            const sectionHeight = section.clientHeight;
+            if (pageYOffset >= sectionTop - 200) {
+                current = section.getAttribute('id');
+            }
+        });
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + current) {
+                link.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

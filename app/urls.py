@@ -9,4 +9,5 @@ urlpatterns = [
     path('upload/files/', views.handle_multiple_uploads, name='handle_multiple_uploads'),
     path('contact/', views.contact, name='contact_page'),
     path('contact/submit/', views.contact_submit, name='contact_submit'),
+    path('documentation/', views.documentation, name='documentation'),
 ] 

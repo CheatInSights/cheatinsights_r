@@ -237,3 +237,10 @@ def contact(request):
     Render the contact page
     """
     return render(request, 'app/contact.html')
+
+
+def documentation(request):
+    """
+    Render the documentation page
+    """
+    return render(request, 'app/documentation.html')
