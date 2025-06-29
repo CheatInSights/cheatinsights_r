@@ -244,3 +244,10 @@ def documentation(request):
     Render the documentation page
     """
     return render(request, 'app/documentation.html')
+
+
+def company(request):
+    """
+    Render the company page
+    """
+    return render(request, 'app/company.html')

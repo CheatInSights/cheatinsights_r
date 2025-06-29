@@ -1,0 +1,926 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}About Us - CheatInSights{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dark Mode Design System */
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #8b5cf6;
+        --accent: #a855f7;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #0f172a;
+        --light: #1e293b;
+        --white: #ffffff;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-300: #cbd5e1;
+        --gray-400: #94a3b8;
+        --gray-500: #64748b;
+        --gray-600: #475569;
+        --gray-700: #334155;
+        --gray-800: #1e293b;
+        --gray-900: #0f172a;
+        --dark-bg: #0a0a0a;
+        --dark-surface: #111111;
+        --dark-card: #1a1a1a;
+        --dark-border: #2a2a2a;
+        --dark-text: #e5e7eb;
+        --dark-text-secondary: #9ca3af;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    }
+
+    /* Base Styles - Dark Mode */
+    body {
+        background-color: var(--dark-bg);
+        color: var(--dark-text);
+        line-height: 1.7;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Hero Section - Dark Gradient */
+    .hero-section {
+        background: linear-gradient(135deg, var(--gray-900) 0%, var(--dark-bg) 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.5;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+    }
+
+    .hero-badge {
+        display: inline-block;
+        background: rgba(99, 102, 241, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--dark-text-secondary);
+        margin-bottom: 2.5rem;
+        max-width: 600px;
+    }
+
+    .hero-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1.5rem;
+        margin-top: 3rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        background: rgba(99, 102, 241, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-4px);
+        background: rgba(99, 102, 241, 0.15);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        font-size: 0.875rem;
+        color: var(--dark-text-secondary);
+        font-weight: 500;
+    }
+
+    /* Content Sections - Dark Mode */
+    .section {
+        padding: 6rem 0;
+        background-color: var(--dark-bg);
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.125rem;
+        color: var(--dark-text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Mission Section - Dark Timeline */
+    .mission-timeline {
+        position: relative;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .timeline-item:nth-child(even) {
+        flex-direction: row-reverse;
+    }
+
+    .timeline-marker {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+        margin: 0 2rem;
+        box-shadow: var(--shadow-lg);
+    }
+
+    .timeline-content {
+        background: var(--dark-card);
+        padding: 2rem;
+        border-radius: 16px;
+        box-shadow: var(--shadow-md);
+        flex: 1;
+        border: 1px solid var(--dark-border);
+    }
+
+    .timeline-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+    }
+
+    .timeline-description {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+    }
+
+    /* Values Section - Dark Cards */
+    .values-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .value-card {
+        background: var(--dark-card);
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .value-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .value-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        background: var(--dark-surface);
+    }
+
+    .value-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .value-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 1rem;
+    }
+
+    .value-description {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+    }
+
+    /* Team Section - Dark Cards */
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 2rem;
+    }
+
+    .team-card {
+        background: var(--dark-card);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+    }
+
+    .team-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        background: var(--dark-surface);
+    }
+
+    .team-header {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        padding: 2rem;
+        text-align: center;
+        color: white;
+    }
+
+    .team-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1rem;
+        font-size: 2.5rem;
+        font-weight: 600;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .team-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .team-role {
+        font-size: 0.875rem;
+        opacity: 0.9;
+    }
+
+    .team-body {
+        padding: 2rem;
+    }
+
+    .team-bio {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .team-social {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+    }
+
+    .social-link {
+        width: 40px;
+        height: 40px;
+        background: var(--dark-surface);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--dark-text-secondary);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: 1px solid var(--dark-border);
+    }
+
+    .social-link:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Technology Section - Dark Cards */
+    .tech-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .tech-card {
+        background: var(--dark-card);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .tech-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        transform: translate(50%, -50%);
+        opacity: 0.1;
+    }
+
+    .tech-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        background: var(--dark-surface);
+    }
+
+    .tech-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1.5rem;
+    }
+
+    .tech-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 1rem;
+    }
+
+    .tech-description {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+    }
+
+    /* Contact Section - Dark Theme */
+    .contact-section {
+        background: linear-gradient(135deg, var(--gray-900), var(--dark-bg));
+        color: white;
+    }
+
+    .contact-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+    }
+
+    .contact-card {
+        background: rgba(99, 102, 241, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .contact-card:hover {
+        transform: translateY(-8px);
+        background: rgba(99, 102, 241, 0.15);
+    }
+
+    .contact-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .contact-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--dark-text);
+    }
+
+    .contact-info {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .contact-link {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+
+    .contact-link:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        color: white;
+    }
+
+    /* Alternating Section Backgrounds */
+    .section:nth-child(even) {
+        background-color: var(--dark-surface);
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 80vh;
+            padding: 4rem 0;
+        }
+
+        .timeline-item,
+        .timeline-item:nth-child(even) {
+            flex-direction: column;
+            text-align: center;
+        }
+
+        .timeline-marker {
+            margin: 0 auto 1rem;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        .values-grid,
+        .team-grid,
+        .tech-grid,
+        .contact-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .hero-stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .stat-item {
+            padding: 1rem;
+        }
+
+        .value-card,
+        .team-card,
+        .tech-card,
+        .contact-card {
+            padding: 1.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-star me-2"></i>Leading Academic Integrity Platform
+            </div>
+            <h1 class="hero-title">Revolutionizing Academic Integrity</h1>
+            <p class="hero-subtitle">
+                CheatInSights combines cutting-edge AI technology with deep educational expertise 
+                to help institutions maintain the highest standards of academic honesty.
+            </p>
+            
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">100+</div>
+                    <div class="stat-label">Institutions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50K+</div>
+                    <div class="stat-label">Documents</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">99.8%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Support</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Mission Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Our Mission</div>
+            <h2 class="section-title">Building Trust in Education</h2>
+            <p class="section-subtitle">
+                We're on a mission to uphold academic integrity through innovative technology 
+                and unwavering commitment to educational excellence.
+            </p>
+        </div>
+        
+        <div class="mission-timeline">
+            <div class="timeline-item">
+                <div class="timeline-marker">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">Innovation First</h3>
+                    <p class="timeline-description">
+                        We continuously push the boundaries of technology to develop more sophisticated 
+                        and accurate detection methods that adapt to evolving academic challenges.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-marker">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">Protect & Support</h3>
+                    <p class="timeline-description">
+                        Our platform helps educators detect potential issues while maintaining a 
+                        supportive environment that promotes learning and growth.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="timeline-item">
+                <div class="timeline-marker">
+                    <i class="fas fa-globe"></i>
+                </div>
+                <div class="timeline-content">
+                    <h3 class="timeline-title">Global Impact</h3>
+                    <p class="timeline-description">
+                        We strive to make a positive impact on education worldwide, helping 
+                        institutions across the globe maintain academic standards and integrity.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Values Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Our Values</div>
+            <h2 class="section-title">What Drives Us Forward</h2>
+            <p class="section-subtitle">
+                These core principles guide every decision we make and shape our relationships 
+                with customers, partners, and the educational community.
+            </p>
+        </div>
+        
+        <div class="values-grid">
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="value-title">Educational Excellence</h3>
+                <p class="value-description">
+                    We are passionate about education and committed to helping institutions 
+                    maintain the highest standards of academic quality and integrity.
+                </p>
+            </div>
+            
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h3 class="value-title">Innovation</h3>
+                <p class="value-description">
+                    We continuously push the boundaries of technology to develop more 
+                    sophisticated and accurate detection methods.
+                </p>
+            </div>
+            
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-handshake"></i>
+                </div>
+                <h3 class="value-title">Trust & Transparency</h3>
+                <p class="value-description">
+                    We build lasting relationships based on trust, transparency, and 
+                    open communication with our customers and partners.
+                </p>
+            </div>
+            
+            <div class="value-card">
+                <div class="value-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="value-title">Customer Success</h3>
+                <p class="value-description">
+                    Your success is our success. We provide exceptional support and 
+                    work closely with you to achieve your academic integrity goals.
+                </p>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+<!-- Team Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Our Team</div>
+            <h2 class="section-title">Meet the Experts</h2>
+            <p class="section-subtitle">
+                Our diverse team combines deep technical expertise with educational experience 
+                to deliver the most effective academic integrity solutions.
+            </p>
+        </div>
+        
+        <div class="team-grid">
+            <div class="team-card">
+                <div class="team-header">
+                    <div class="team-avatar">SL</div>
+                    <h3 class="team-name">Sean Lixu</h3>
+                    <p class="team-role">Founder & CEO</p>
+                </div>
+                <div class="team-body">
+                    <p class="team-bio">
+                        Former educator with 15+ years of experience in academic integrity. 
+                        Passionate about using technology to support fair and honest education.
+                    </p>
+                    <div class="team-social">
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="team-card">
+                <div class="team-header">
+                    <div class="team-avatar">WS</div>
+                    <h3 class="team-name">William Salim</h3>
+                    <p class="team-role">Founder & CEO</p>
+                </div>
+                <div class="team-body">
+                    <p class="team-bio">
+                        Expert in machine learning and document analysis with a PhD in Computer Science. 
+                        Leads our technical innovation and product development.
+                    </p>
+                    <div class="team-social">
+                        <a href="#" class="social-link"><i class="fab fa-linkedin"></i></a>
+                        <a href="#" class="social-link"><i class="fab fa-github"></i></a>
+                        <a href="#" class="social-link"><i class="fas fa-envelope"></i></a>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</section>
+
+<!-- Technology Section -->
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Our Technology</div>
+            <h2 class="section-title">Powered by Innovation</h2>
+            <p class="section-subtitle">
+                We leverage cutting-edge technology to provide the most comprehensive and accurate 
+                document analysis available in the market.
+            </p>
+        </div>
+        
+        <div class="tech-grid">
+            <div class="tech-card">
+                <div class="tech-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="tech-title">Advanced AI & Machine Learning</h3>
+                <p class="tech-description">
+                    Our proprietary algorithms analyze document patterns, metadata, and editing 
+                    history to detect potential academic integrity issues with high accuracy.
+                </p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="tech-title">Metadata Analysis</h3>
+                <p class="tech-description">
+                    Deep analysis of document metadata including creation dates, modification 
+                    history, author information, and RSID patterns.
+                </p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h3 class="tech-title">Statistical Analysis</h3>
+                <p class="tech-description">
+                    Comprehensive statistical analysis of document characteristics including 
+                    word counts, character distributions, and writing patterns.
+                </p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h3 class="tech-title">Cross-Document Analysis</h3>
+                <p class="tech-description">
+                    Advanced comparison algorithms that identify similarities and potential 
+                    collusion across multiple documents and authors.
+                </p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">
+                    <i class="fas fa-cloud"></i>
+                </div>
+                <h3 class="tech-title">Cloud-Based Platform</h3>
+                <p class="tech-description">
+                    Secure, scalable cloud infrastructure that ensures fast processing, 
+                    reliable access, and enterprise-grade security.
+                </p>
+            </div>
+            
+            <div class="tech-card">
+                <div class="tech-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h3 class="tech-title">Responsive Design</h3>
+                <p class="tech-description">
+                    Modern, intuitive interface that works seamlessly across desktop, 
+                    tablet, and mobile devices for maximum accessibility.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Section -->
+<section class="section contact-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Get in Touch</div>
+            <h2 class="section-title">Ready to Get Started?</h2>
+            <p class="section-subtitle">
+                Ready to enhance your academic integrity program? We're here to help you 
+                get started and answer any questions you may have.
+            </p>
+        </div>
+        
+        <div class="contact-grid">
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <h3 class="contact-title">Email Us</h3>
+                <p class="contact-info">
+                    Send us a message and we'll get back to you within 24 hours.
+                </p>
+                <a href="mailto:contact@cheatinsights.com" class="contact-link">
+                    contact@cheatinsights.com
+                </a>
+            </div>
+            
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-phone"></i>
+                </div>
+                <h3 class="contact-title">Call Us</h3>
+                <p class="contact-info">
+                    Speak directly with our team during business hours.
+                </p>
+                <a href="tel:+1-555-123-4567" class="contact-link">
+                    +1 (555) 123-4567
+                </a>
+            </div>
+            
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3 class="contact-title">Schedule a Demo</h3>
+                <p class="contact-info">
+                    See our platform in action with a personalized demonstration.
+                </p>
+                <a href="/contact" class="contact-link">
+                    Request Demo
+                </a>
+            </div>
+            
+            <div class="contact-card">
+                <div class="contact-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3 class="contact-title">Live Chat</h3>
+                <p class="contact-info">
+                    Get instant answers to your questions through our live chat.
+                </p>
+                <a href="#" class="contact-link">
+                    Start Chat
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 
