@@ -6,6 +6,12 @@ import io
 from datetime import datetime
 from docx import Document  # You would need to: pip install python-docx
 
+# Control terminal output - set to True for detailed debug output, False for checkpoint only
+DEBUG_OUTPUT = False
+
+# Control found message output - set to True to show found messages, False to hide them
+FOUND_OUTPUT = False
+
 
 class Extract:
     """
@@ -18,6 +24,8 @@ class Extract:
     RUN_TAG = "r"  # Text run tag (a continuous segment of text with the same formatting)
     TEXT_TAG = "t"  # Actual text content tag
     RSIDR_PROPERTY = "w:rsidR"  # RSID property for runs
+    INSRSID_PROPERTY = "w:insrsid"  # RSID property for insertions
+    RSIDRDEFAULT_PROPERTY = "w:rsidRDefault"  # Default RSID property for paragraphs
     PARAGRAPH_ID_PROPERTY = "w14:paraId"  # Unique paragraph identifier
     HYPERLINK_TAG = "hyperlink"  # Hyperlink tag
 
@@ -38,29 +46,49 @@ class Extract:
                 self.settings_content = zip.read('word/settings.xml')
             except KeyError:
                 self.settings_content = None
-                print("[DEBUG] No settings.xml found in the .docx file.")
+                self.debug_print("[DEBUG] No settings.xml found in the .docx file.")
             
             # App properties
             try:
                 self.app_content = zip.read('docProps/app.xml')
             except KeyError:
                 self.app_content = None
-                print("[DEBUG] No app.xml found in the .docx file.")
+                self.debug_print("[DEBUG] No app.xml found in the .docx file.")
                 
             # Core properties
             try:
                 self.core_content = zip.read('docProps/core.xml')
             except KeyError:
                 self.core_content = None
-                print("[DEBUG] No core.xml found in the .docx file.")
+                self.debug_print("[DEBUG] No core.xml found in the .docx file.")
                 
             # Custom properties
             try:
                 self.custom_content = zip.read('docProps/custom.xml')
             except KeyError:
                 self.custom_content = None
-                print("[DEBUG] No custom.xml found in the .docx file.")
+                self.debug_print("[DEBUG] No custom.xml found in the .docx file.")
 
+    def debug_print(self, message):
+        """
+        Print debug messages only if DEBUG_OUTPUT is True.
+        
+        Args:
+            message: The message to print
+        """
+        if DEBUG_OUTPUT:
+            print(message)
+
+    def found_print(self, message):
+        """
+        Print found messages only if FOUND_OUTPUT is True.
+        
+        Args:
+            message: The message to print
+        """
+        if FOUND_OUTPUT:
+            print(message)
+            
     def get_paragraphs(self):
         """
         Get all paragraphs from the document with their runs and RSIDs.
@@ -70,6 +98,7 @@ class Extract:
             list: A list of dictionaries containing paragraph information:
                 - id: Unique paragraph identifier (or placeholder if none exists)
                 - rsid: Revision Session ID for the paragraph
+                - rsid_default: Default RSID for the paragraph
                 - runs: List of text runs with their RSIDs
                 - xml: Original XML string of the paragraph
         """
@@ -78,56 +107,69 @@ class Extract:
         body = soup.find(self.BODY_TAG)
         
         if body is None:
-            print("[DEBUG] No body tag found in document")
+            self.debug_print("[DEBUG] No body tag found in document")
             return paragraphs
             
-        print(f"\n[DEBUG] Processing document body with {len(list(body.children))} children")
+        self.debug_print(f"\n[DEBUG] Processing document body with {len(list(body.children))} children")
         
         for i, child in enumerate(body.children):
             if not hasattr(child, 'name') or child.name != self.PARAGRAPH_TAG:
                 continue
                 
-            print(f"\n[DEBUG] Processing paragraph {i}")
+            self.debug_print(f"\n[DEBUG] Processing paragraph {i}")
             
             # Get paragraph ID or create a placeholder
             paragraph_id = child.get(self.PARAGRAPH_ID_PROPERTY)
             if paragraph_id is None:
                 paragraph_id = f"placeholder_{i}"
-                print(f"[DEBUG] No ID found for paragraph {i}, using placeholder: {paragraph_id}")
+                self.debug_print(f"[DEBUG] No ID found for paragraph {i}, using placeholder: {paragraph_id}")
+            
+            # Check for rsidRDefault in paragraph
+            paragraph_rsid_default = child.get(self.RSIDRDEFAULT_PROPERTY)
+            if paragraph_rsid_default:
+                self.found_print(f"[FOUND] Paragraph {i} has rsidRDefault: {paragraph_rsid_default}")
             
             paragraph_info = {
                 'id': paragraph_id,
                 'rsid': child.get(self.RSIDR_PROPERTY, None),
+                'rsid_default': paragraph_rsid_default,
                 'runs': [],
                 'xml': str(child)
             }
             
-            print(f"[DEBUG] Paragraph ID: {paragraph_info['id']}, RSID: {paragraph_info['rsid']}")
+            self.debug_print(f"[DEBUG] Paragraph ID: {paragraph_info['id']}, RSID: {paragraph_info['rsid']}")
             
             # Process all runs, including those in hyperlinks
             all_runs = child.find_all(self.RUN_TAG, recursive=True)
-            print(f"[DEBUG] Found {len(all_runs)} runs in paragraph")
+            self.debug_print(f"[DEBUG] Found {len(all_runs)} runs in paragraph")
             
             for j, run in enumerate(all_runs):
                 text_tag = run.find(self.TEXT_TAG)
                 if text_tag is None:
-                    print(f"[DEBUG] Run {j}: No text tag found")
+                    self.debug_print(f"[DEBUG] Run {j}: No text tag found")
                     continue
                     
                 text = text_tag.string or ''
                 run_rsid = run.get(self.RSIDR_PROPERTY, paragraph_info['rsid'])
-                print(f"[DEBUG] Run {j}: Text='{text}', RSID={run_rsid}")
+                
+                # Check for insrsid in run
+                run_insrsid = run.get(self.INSRSID_PROPERTY)
+                if run_insrsid:
+                    self.found_print(f"[FOUND] Run {j} in paragraph {i} has insrsid: {run_insrsid} (text: '{text}')")
+                
+                self.debug_print(f"[DEBUG] Run {j}: Text='{text}', RSID={run_rsid}")
                 
                 paragraph_info['runs'].append({
                     'text': text,
-                    'rsid': run_rsid
+                    'rsid': run_rsid,
+                    'insrsid': run_insrsid
                 })
             
             # Always add the paragraph, even if it has no runs
-            print(f"[DEBUG] Adding paragraph with {len(paragraph_info['runs'])} runs")
+            self.debug_print(f"[DEBUG] Adding paragraph with {len(paragraph_info['runs'])} runs")
             paragraphs.append(paragraph_info)
             
-        print(f"\n[DEBUG] Total paragraphs extracted: {len(paragraphs)}")
+        self.debug_print(f"\n[DEBUG] Total paragraphs extracted: {len(paragraphs)}")
         return paragraphs
 
     def save_to_json(self, output_file=None):
@@ -149,7 +191,7 @@ class Extract:
         with open(output_file, 'w', encoding='utf-8') as f:
             json.dump(paragraphs, f, indent=2, ensure_ascii=False)
         
-        print(f"[DEBUG] Saved results to {output_file}")
+        self.debug_print(f"[DEBUG] Saved results to {output_file}")
         return output_file
 
     def get_settings_rsids(self):
@@ -216,12 +258,12 @@ class Extract:
         rsid_data = self.get_settings_rsids()
         
         if rsid_data['total_count'] == 0:
-            print("[DEBUG] No settings.xml found in the .docx file or no RSIDs found.")
+            self.debug_print("[DEBUG] No settings.xml found in the .docx file or no RSIDs found.")
             return
         
-        print(f"Found {rsid_data['total_count']} unique RSID values:")
+        self.found_print(f"Found {rsid_data['total_count']} unique RSID values:")
         for rsid_info in rsid_data['rsids']:
-            print(f"RSID: {rsid_info['value']} (found in: {', '.join(rsid_info['sources'])})")
+            self.found_print(f"RSID: {rsid_info['value']} (found in: {', '.join(rsid_info['sources'])})")
 
 
 
@@ -312,7 +354,7 @@ class Extract:
                 metadata['docx_custom_properties'][prop.name] = prop.value
                 
         except Exception as e:
-            print(f"[DEBUG] Could not extract python-docx metadata: {str(e)}")
+            self.debug_print(f"[DEBUG] Could not extract python-docx metadata: {str(e)}")
             
         return metadata
 
@@ -336,6 +378,44 @@ class Extract:
                 
     #     return rsids
 
+    # def check_advanced_rsids(self):
+    #     """
+    #     Check for advanced RSID types (insrsid, rsidRDefault) in the document and output findings to terminal.
+    #     """
+    #     print("\n" + "="*60)
+    #     print("CHECKING FOR ADVANCED RSID TYPES")
+    #     print("="*60)
+        
+    #     # Check settings.xml for advanced RSID types
+    #     if self.settings_content:
+    #         soup = BeautifulSoup(self.settings_content, 'xml')
+            
+    #         # Check for insrsid elements
+    #         insrsid_elements = soup.find_all(lambda tag: 'insrsid' in tag.name.lower())
+    #         if insrsid_elements:
+    #             self.found_print(f"[FOUND] {len(insrsid_elements)} insrsid elements in settings.xml:")
+    #             for elem in insrsid_elements:
+    #                 rsid_value = elem.get('w:val')
+    #                 self.found_print(f"  - {elem.name}: {rsid_value}")
+    #         else:
+    #             print("[NOT FOUND] No insrsid elements in settings.xml")
+            
+    #         # Check for rsidRDefault elements
+    #         rsidrdefault_elements = soup.find_all(lambda tag: 'rsidrdefault' in tag.name.lower())
+    #         if rsidrdefault_elements:
+    #             self.found_print(f"[FOUND] {len(rsidrdefault_elements)} rsidRDefault elements in settings.xml:")
+    #             for elem in rsidrdefault_elements:
+    #                 rsid_value = elem.get('w:val')
+    #                 self.found_print(f"  - {elem.name}: {rsid_value}")
+    #         else:
+    #             print("[NOT FOUND] No rsidRDefault elements in settings.xml")
+    #     else:
+    #         print("[NOT FOUND] No settings.xml available to check")
+        
+    #     print("="*60)
+    #     print("END OF ADVANCED RSID CHECK")
+    #     print("="*60 + "\n")
+
 
 def main():
     import sys
@@ -345,36 +425,14 @@ def main():
     docx_path = sys.argv[1]
     extractor = Extract(docx_path)
     
+    # Check for advanced RSID types
+    # extractor.check_advanced_rsids()
+    
     # Print RSIDs to terminal
     extractor.print_settings_rsids()
     
-    print("\n========== METADATA SECTION ==========")
-    # Get all metadata
-    metadata = extractor.get_all_metadata()
-    print("\n========== METADATA FROM core.xml ==========")
-    print(json.dumps(metadata.get('core_properties', {}), indent=2, default=str))
-    
-    print("\n========== METADATA FROM app.xml ==========")
-    print(json.dumps(metadata.get('app_properties', {}), indent=2, default=str))
-    
-    print("\n========== METADATA FROM custom.xml ==========")
-    print(json.dumps(metadata.get('custom_properties', {}), indent=2, default=str))
-    
-    # print("\n========== RSIDs FROM settings.xml ==========")
-    # print(json.dumps(metadata.get('rsids', {}), indent=2, default=str))
-    
-    print("\n========== METADATA FROM python-docx (core properties) ==========")
-    print(json.dumps(metadata.get('docx_core_properties', {}), indent=2, default=str))
-    
-    print("\n========== METADATA FROM python-docx (custom properties) ==========")
-    print(json.dumps(metadata.get('docx_custom_properties', {}), indent=2, default=str))
-
-    
-    # Also demonstrate JSON output
-    # import json
-    # rsid_data = extractor.get_settings_rsids()
-    # print("\nJSON representation:")
-    # print(json.dumps(rsid_data, indent=2))
+    # Always print checkpoint message
+    print("[CHECKPOINT] Document processing completed successfully")
 
 if __name__ == "__main__":
     main()

@@ -1,6 +1,9 @@
 import re
 from collections import defaultdict
 
+# Control terminal output - set to True for detailed debug output, False for checkpoint only
+DEBUG_OUTPUT = False
+
 
 class DOCXStatistics:
     """
@@ -27,6 +30,17 @@ class DOCXStatistics:
         self.char_per_run = self.get_list_char_per_run()
         self.word_count = self.get_word_count()
         self.short_paragraph_count = self.get_short_paragraph_count()
+
+
+    def debug_print(self, message):
+        """
+        Print debug messages only if DEBUG_OUTPUT is True.
+        
+        Args:
+            message: The message to print
+        """
+        if DEBUG_OUTPUT:
+            print(message)
 
     def get_average_num_char_per_unique_rsid(self):
         """
@@ -145,6 +159,7 @@ class DOCXStatistics:
         return upper_bound, outliers
 
     def calculate_suspicion_score(self):
+        self.debug_print("\n\n\n\n DEBUG: HERE calculates suspicion score")
         """
         Calculates a suspicion score based on a set of rules.
         """

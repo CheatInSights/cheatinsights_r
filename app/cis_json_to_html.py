@@ -5,6 +5,9 @@ import colorsys
 import hashlib
 import io
 
+# Control terminal output - set to True for detailed debug output, False for checkpoint only
+DEBUG_OUTPUT = False
+
 class DocumentReconstructor:
     def __init__(self, json_file, document_name=None):
         """
@@ -24,9 +27,17 @@ class DocumentReconstructor:
         else:
             # Handle file-like object
             self.data = json.load(json_file)
-            # print("2HERE VVVVV\n")
-            # print(self.data)
         self.rsid_colors = self._generate_rsid_colors()
+
+    def debug_print(self, message):
+        """
+        Print debug messages only if DEBUG_OUTPUT is True.
+        
+        Args:
+            message: The message to print
+        """
+        if DEBUG_OUTPUT:
+            print(message)
 
     def _generate_rsid_colors(self):
         """
@@ -172,17 +183,15 @@ class DocumentReconstructor:
 </html>"""
 
         if output_file is None:
-            # print("here is html_content\n")
-            # print(html_content)
             return html_content
 
         # Write to file if output_file is provided
         with open(output_file, 'w', encoding='utf-8') as f:
             f.write(html_content)
 
-        # print(f"[DEBUG] Created HTML file: {output_file}")
-        # print("output_file \n")
-        # print(output_file)
+        self.debug_print(f"DEBUG Created HTML file: {output_file}")
+        self.debug_print("output_file \n")
+
         return output_file
 
 def main():
