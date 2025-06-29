@@ -1,8 +1,13 @@
 {% extends "app/base.html" %}
+{% load static %}
+
 
 {% block title %}Home - CheatInSights{% endblock %}
 
 {% block content %}
+
+
+
 
 <!-- Hero Section -->
 <section class="hero">
@@ -74,59 +79,208 @@
     <div class="features-container">
         <div class="section-title">
             <h2>Why Choose CheatInSights?</h2>
-            <p>Modern security for the modern workplace</p>
+            <p>Worlds first intrinsic document for visualisation & analysis</p>
         </div>
 
         <div class="features-grid">
             <div class="feature-card">
                 <div class="feature-icon">🔒</div>
-                <h3>Zero Trust Security</h3>
-                <p>Every connection is verified and encrypted. No implicit trust, no broad network access. Only authenticated users can access specific resources they need.</p>
+                <h3>Privacy-First Architecture</h3>
+                <p>All document data is stored temporarily and deleted when you close the application. The system doesn't track any information about your documents, ensuring complete privacy.</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon">⚡</div>
-                <h3>Lightning Fast Setup</h3>
-                <p>Deploy in minutes with our simple agent installation. No complex network configurations or hardware requirements. Get your team connected instantly.</p>
+                <h3>Lightning Fast Analysis</h3>
+                <p>Identify editing patterns and outliers quickly with simultaneous document processing and visual tools, all without complex setup or delays.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">🌐</div>
-                <h3>Global Network</h3>
-                <p>Connect from anywhere with our worldwide network of secure gateways. Optimized routing ensures the best performance for your remote workforce.</p>
+                <div class="feature-icon">🎓</div>
+                <h3>Academic Integrity Focus</h3>
+                <p>Designed for schools to uphold standards, it detects collaboration, spots plagiarism, and ensures fair assessments with accuracy.</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon">📊</div>
-                <h3>Complete Visibility</h3>
-                <p>Real-time monitoring and detailed analytics give you full visibility into who's accessing what, when, and from where across your network.</p>
+                <h3>Visual Document Intelligence</h3>
+                <p>Transform document analysis into visual insights using color-coded highlights and charts to quickly spot and address issues.</p>
             </div>
 
             <div class="feature-card">
                 <div class="feature-icon">🔧</div>
-                <h3>Easy Management</h3>
-                <p>Intuitive admin console makes it simple to manage users, resources, and policies. No specialized networking knowledge required.</p>
+                <h3>Zero Learning Curve</h3>
+                <p>With an intuitive interface, faculty can start analyzing documents immediately with drag-and-drop simplicity, requiring no IT support.</p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">🛡️</div>
-                <h3>Enterprise Grade</h3>
-                <p>Built for scale with enterprise-grade security, compliance certifications, and 99.9% uptime SLA. Trusted by companies worldwide.</p>
+                <div class="feature-icon">🏛️</div>
+                <h3>Secure Local Processing</h3>
+                <p>Built for higher education with secure local processing and comprehensive document analysis, designed to maintain academic integrity standards.</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Featured Feature Section -->
+    
+</section>
+
+<!-- Comparison Section -->
+<section class="comparison-section py-5" >
+    <div class="container" >
+        <div class="row">
+            <div class="col-12 text-center mb-5">
+                <h2 class="display-5 fw-bold text-dark">The Difference is Clear.</h2>
+                <p class="lead text-muted">See how CheatInSights provides deeper insights than traditional AI detectors</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            <!-- AI Detectors Column -->
+            <div class="col-lg-6">
+                <div class="comparison-card h-100">
+                    <div class="comparison-header">
+                        <h3 class="comparison-title text-danger">
+                            <i class="fas fa-robot me-2"></i>
+                            What You See with AI Detectors
+                        </h3>
+                    </div>
+                    <div class="comparison-content">
+                        <div class="image-container">
+                            <img src="{% static 'them.png' %}" alt="AI Detectors Example" class="img-fluid w-100">
+                            <div class="hover-overlay">
+                                <div class="overlay-text">
+                                    <h2>100% AI Generated</h2>
+                                    <p style="color: white">Humanised to fool detectors</p>
+                                    <p class="detector-result">Detectors say: 0% AI</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CheatInSights Column -->
+            <div class="col-lg-6">
+                <div class="comparison-card h-100">
+                    <div class="comparison-header">
+                        <h3 class="comparison-title text-success">
+                            <i class="fas fa-chart-line me-2"></i>
+                            What You Could See with CheatInSights
+                        </h3>
+                    </div>
+                    <div class="comparison-content">
+                        <img src="{% static 'us.png' %}" alt="CheatInSights Example" class="img-fluid w-100">
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </section>
 
+<!-- Explanation Section -->
+<section class="explanation-section" id="explanation">
+    <div class="explanation-container">
+        <div class="section-title">
+            <h2>Why CheatInSights is Different</h2>
+            <p>Understanding the fundamental differences in our approach</p>
+        </div>
+
+        <div class="explanation-grid">
+            <div class="explanation-card">
+                <div class="explanation-icon">🤖</div>
+                <h3>Traditional AI Detectors</h3>
+                <ul class="explanation-list">
+                    <li><strong>Extrinsic Analysis:</strong> They see the same information as you do - just the final text content.</li>
+                    <li><strong>Rough Estimates:</strong> Provide a percentage indicating how likely content is AI-generated.</li>
+                    <li><strong>Easily Circumvented:</strong> Humanizing algorithms can easily fool these detectors.</li>
+                </ul>
+            </div>
+
+            <div class="explanation-card">
+                <div class="explanation-icon">🧠</div>
+                <h3>CheatInSights Approach</h3>
+                <ul class="explanation-list">
+                    <li><strong>Intrinsic Analysis:</strong> Visualizes the underlying writing behavior patterns embedded in documents.</li>
+                    <li><strong>Visual Detection:</strong> Original vs AI-assisted writing behaviors are visibly different and easily spotted.</li>
+                    <li><strong>Advanced Tools:</strong> Distribution graphs plot documents across various metrics to identify outliers.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Graphs Section -->
+<section class="graphs-section" id="graphs">
+    <div class="graphs-container">
+        <div class="rotating-words-container">
+            <div class="rotating-words">
+                <span class="word-left" id="wordLeft">Intelligent</span>
+                <span class="separator">:</span>
+                <span class="word-right" id="wordRight">Analysis</span>
+            </div>
+            <div class="rotating-subtitle">
+                <p>Discover the power of advanced document intelligence</p>
+            </div>
+        </div>
+
+        <div class="graphs-content">
+            <!-- Graph Grid -->
+            <div class="graphs-grid">
+                <div class="graph-card">
+                    <div class="graph-placeholder">
+                        <img src="{% static 'graph4.png' %}" alt="Outlier Detection Graph" class="img-fluid">
+                    </div>
+                    <h4>Plot for cohort submissions</h4>
+                    <p>Advanced algorithms identify unusual editing patterns and potential integrity issues</p>
+                </div>
+
+                <div class="graph-card">
+                    <div class="graph-placeholder">
+                        <img src="{% static 'graph1.png' %}" alt="Document Analysis Graph" class="img-fluid">
+                    </div>
+                    <h4>Customisable Graphs</h4>
+                    <p>Choose from multiple metrics to create tailored visualizations for your specific analysis needs</p>
+                </div>
+                
+                <div class="graph-card">
+                    <div class="graph-placeholder">
+                        <img src="{% static 'graph2.png' %}" alt="Collaboration Analysis Graph" class="img-fluid">
+                    </div>
+                    <h4>Instantly identify outliers</h4>
+                    <p>Automatically detect and highlight documents that deviate from normal patterns in your dataset</p>
+                </div>
+                
+                <div class="graph-card">
+                    <div class="graph-placeholder">
+                        <img src="{% static 'graph3.png' %}" alt="Timeline Analysis Graph" class="img-fluid">
+                    </div>
+                    <h4>Plot against many metrics</h4>
+                    <p>Compare documents across multiple dimensions including RSID frequency, collaboration scores, and more</p>
+                </div>
+                
+            
+            </div>
+
+            <!-- Rotating Words -->
+            
+        </div>
+    </div>
+</section>
 
 <!-- CTA Section -->
 <section class="cta">
     <div class="cta-container">
-        <h2>Ready to Modernize Your Network Security?</h2>
-        <p>Join thousands of companies who have already made the switch to zero trust network access.</p>
+        <h2>Are you keeping up with the rise of AI?</h2>
+        <p>Reach out to us to learn more!</p>
         <div class="hero-buttons">
-            <a href="#" class="btn btn-primary btn-large">Start Free Trial</a>
-            <a href="#" class="btn btn-secondary btn-large">Contact Sales</a>
+
+            <a href="#" class="btn btn-primary btn-large">Contact Us</a>
         </div>
     </div>
 </section>
-{% endblock %} 
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'home.js' %}"></script>
+{% endblock %}
