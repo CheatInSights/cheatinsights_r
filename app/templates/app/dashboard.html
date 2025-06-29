@@ -59,7 +59,7 @@
     }
 
     #results {
-      display: flex;
+      display: none;
     }
 
     /* Graph container styles */
@@ -189,7 +189,8 @@
       background: #f8f9fa;
       border-radius: 8px;
       overflow-y: scroll;
-      height: 100px;
+      min-height: 100px;
+      max-height: 130px;
     }
 
     .legend {
@@ -635,6 +636,11 @@
     .utility-bar {
       overflow-x: hidden;
     }
+
+    .section-wrapper {
+      width: 100%;
+      height: 100%;
+    }
   </style>
 
 </head>
@@ -645,7 +651,7 @@
     <div class="row g-0">
       <div class="col-2 menu1 border border-secondary">
         <div class="row ">
-          <div class="w-100 mt-5  text-center "><a href="/">CheatInSights</a></div>
+          <div class="w-100 mt-5  text-center ">CheatInSights</div>
           <button id="upload_button" type="button" class="btn btn-light w-100 mt-5">Upload</button>
           <button id="files_button" type="button" class="btn btn-light w-100 mt-5">Files</button>
           <button id="singleview_button" type="button" class="btn btn-light w-100 mt-5">Focus</button>
@@ -657,15 +663,15 @@
 
       </div>
       <div class="col-8 main_content ">
-        {% include 'app/upload_page.html' %}
-        {% include 'app/files_page.html' %}
-        {% include 'app/singleview_page.html' %}
-        {% include 'app/graphs_page.html' %}
+        {% include 'upload_page.html' %}
+        {% include 'files_page.html' %}
+        {% include 'singleview_page.html' %}
+        {% include 'graphs_page.html' %}
         
 
       </div>
       <div class="col-2 menu2 border border-secondary ">
-        {% include 'app/utilitybar.html' %}
+        {% include 'utilitybar.html' %}
         
       </div>
     </div>
@@ -686,10 +692,16 @@
       console.log('Files button:', document.getElementById('files_button'));
       console.log('Graphs button:', document.getElementById('graphs_button'));
 
-      const uploadSection = document.querySelector('div.main_content > div:nth-child(1)');
-      const filesSection = document.querySelector('div.main_content > div:nth-child(2)');
-      const singleviewSection = document.querySelector('div.main_content > div:nth-child(3)');
-      const graphsSection = document.querySelector('div.main_content > div:nth-child(4)');
+      // Use more reliable selectors
+      const uploadSection = document.getElementById('upload_page_wrapper');
+      const filesSection = document.getElementById('files_page_wrapper');
+      const singleviewSection = document.getElementById('singleview_page_wrapper');
+      const graphsSection = document.getElementById('graphs_page_wrapper');
+
+      console.log('Upload section:', uploadSection);
+      console.log('Files section:', filesSection);
+      console.log('Singleview section:', singleviewSection);
+      console.log('Graphs section:', graphsSection);
 
       // Function to remove active class from all buttons
       function removeActiveFromAllButtons() {
@@ -698,19 +710,27 @@
         singleviewButton.classList.remove('active');
         graphsButton.classList.remove('active');
       }
+
+      // Function to hide all sections
+      function hideAllSections() {
+        if (uploadSection) uploadSection.style.display = 'none';
+        if (filesSection) filesSection.style.display = 'none';
+        if (singleviewSection) singleviewSection.style.display = 'none';
+        if (graphsSection) graphsSection.style.display = 'none';
+      }
+
       signoutButton.addEventListener('click', function () {
         // not actual sign out. place hodler for now
         window.location.href = '/';
       })
+
       uploadButton.addEventListener('click', function () {
         console.log("Action: clicked Upload Button");
         removeActiveFromAllButtons();
         uploadButton.classList.add('active');
         
-        uploadSection.style.display = 'block';
-        filesSection.style.display = 'none';
-        singleviewSection.style.display = 'none';
-        graphsSection.style.display = 'none';
+        hideAllSections();
+        if (uploadSection) uploadSection.style.display = 'block';
       });
 
       filesButton.addEventListener('click', function () {
@@ -718,10 +738,8 @@
         removeActiveFromAllButtons();
         filesButton.classList.add('active');
         
-        uploadSection.style.display = 'none';
-        filesSection.style.display = 'block';
-        singleviewSection.style.display = 'none';
-        graphsSection.style.display = 'none';
+        hideAllSections();
+        if (filesSection) filesSection.style.display = 'block';
       });
 
       singleviewButton.addEventListener('click', function () {
@@ -729,10 +747,8 @@
         removeActiveFromAllButtons();
         singleviewButton.classList.add('active');
         
-        uploadSection.style.display = 'none';
-        filesSection.style.display = 'none';
-        singleviewSection.style.display = 'flex';
-        graphsSection.style.display = 'none';
+        hideAllSections();
+        if (singleviewSection) singleviewSection.style.display = 'block';
       });
 
       graphsButton.addEventListener('click', function () {
@@ -740,17 +756,13 @@
         removeActiveFromAllButtons();
         graphsButton.classList.add('active');
         
-        uploadSection.style.display = 'none';
-        filesSection.style.display = 'none';
-        singleviewSection.style.display = 'none';
-        graphsSection.style.display = 'block';
+        hideAllSections();
+        if (graphsSection) graphsSection.style.display = 'block';
       });
 
       // Initialize by showing only the upload section and setting active state
-      uploadSection.style.display = 'block';
-      filesSection.style.display = 'none';
-      singleviewSection.style.display = 'none';
-      graphsSection.style.display = 'none';
+      hideAllSections();
+      if (uploadSection) uploadSection.style.display = 'block';
       
       // Set initial active button
       uploadButton.classList.add('active');

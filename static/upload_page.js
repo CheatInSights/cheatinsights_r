@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedColour = document.getElementById('rsid_color');
     const documentTabs = document.getElementById('documentTabs');
     const graphContainer = document.getElementById('graphContainer');
+    const tableSearch = document.getElementById('tableSearch');
 
 
     let selectedFiles = [];
@@ -23,13 +24,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let globalResponse = null; // Global variable to store the full response
     let metricsDictionary = {};
 
+    // Initialize search functionality
+    if (tableSearch) {
+        tableSearch.addEventListener('input', filterTable);
+    }
+
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropZone.addEventListener(eventName, preventDefaults, false);
         document.body.addEventListener(eventName, preventDefaults, false);
     });
 
-    // Highlight drop zone when item is dragged over it
+    // Highlight drop zone when item is dragged over itg
     ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, highlight, false);
     });
@@ -40,6 +46,20 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle dropped files
     dropZone.addEventListener('drop', handleDrop, false);
+
+    function filterTable() {
+        const searchTerm = tableSearch.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#documentTabs tr');
+        
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchTerm)) {
+                row.classList.remove('hidden');
+            } else {
+                row.classList.add('hidden');
+            }
+        });
+    }
 
     function preventDefaults(e) {
         e.preventDefault();
@@ -86,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Make removeFile globally accessible
-    window.removeFile = removeFile
+    window.removeFile = removeFile;
 
     function updateFileList() {
         if (selectedFiles.length === 0) {
@@ -247,7 +267,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Display selected document
         displayDocument(fileName);
         
-        // Simulate clicking the Focus button to switch to singleview page
+        // // Simulate clicking the Focus button to switch to singleview page
         const focusButton = document.getElementById('singleview_button');
         if (focusButton) {
             focusButton.click();
@@ -778,7 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle form submission
     document.getElementById('uploadForm').addEventListener('submit', function (e) {
-        console.log("Submit pressed");
+        console.log("Submit Pressed");
         e.preventDefault();
 
         // Hide shared RSIDs section on new upload
@@ -814,7 +834,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 uploadStatus.textContent = 'Processing Complete!';
                 
                 // Remove all children from fileList and hide it
-                //const fileList = document.getElementById('fileList');
+                // const fileList = document.getElementById('fileList');
                 
                 // if (fileList) {
                 //     fileList.innerHTML = '';
@@ -823,7 +843,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 const response = JSON.parse(xhr.responseText);
                 displayResults(response);
-
+                
                 // Generate metrics dictionary for both single and multiple file uploads
                 generateMetricsDictionary();
             } else {
@@ -944,7 +964,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (values.length === 1) {
             return { mean: values[0], stdDev: 0 };
         }
-     
+        
         const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
         const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
         const stdDev = Math.sqrt(variance);
