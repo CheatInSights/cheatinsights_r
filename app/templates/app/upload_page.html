@@ -1,46 +1,47 @@
+<div id="upload_page_wrapper" class="section-wrapper">
+    <div id="upload-section" class="row justify-content-center">
+        <div class="col">
+            <div class="text-center m-5">
+                <h1 class="display-5 fw-bold">Upload Documents</h1>
+                <p class="lead text-muted">Upload multiple .docx files to begin analysis</p>
+            </div>
 
-<div id="upload-section" class="row justify-content-center">
-    <div class="col">
-        <div class="text-center m-5">
-            <h1 class="display-5 fw-bold">Upload Documents</h1>
-            <p class="lead text-muted">Upload multiple .docx files to begin analysis</p>
+            <form method="post" enctype="multipart/form-data" id="uploadForm">
+                {% csrf_token %}
+                <div class="upload-area" id="dropZone">
+                    <div class="upload-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <h3 class="h4 mb-3">Drag & Drop your files here</h3>
+                    <p class="text-muted mb-3">or</p>
+                    <input type="file" name="documents" id="fileInput" class="file-input" accept=".docx" multiple>
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                        Choose Files
+                    </button>
+                    <p class="text-muted mt-3" id="fileInfo">No files chosen</p>
+                    <div class="file-list" id="fileList" style="display: none;">
+                        <h6 class="mb-2" style="padding: 0.5rem;">Selected Files:</h6>
+                        <div id="fileItems"></div>
+                    </div>
+                </div>
+
+
+                <div class="upload-progress" id="uploadProgress">
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                            style="width: 0%"></div>
+                    </div>
+                    <p class="text-center mt-2" id="uploadStatus">Uploading...</p>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg px-5" id="uploadButton" disabled>
+                        Upload and Analyze All Files
+                    </button>
+                </div>
+            </form>
+
+            
         </div>
-
-        <form method="post" enctype="multipart/form-data" id="uploadForm">
-            {% csrf_token %}
-            <div class="upload-area" id="dropZone">
-                <div class="upload-icon">
-                    <i class="fas fa-file-upload"></i>
-                </div>
-                <h3 class="h4 mb-3">Drag & Drop your files here</h3>
-                <p class="text-muted mb-3">or</p>
-                <input type="file" name="documents" id="fileInput" class="file-input" accept=".docx" multiple>
-                <button type="button" class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
-                    Choose Files
-                </button>
-                <p class="text-muted mt-3" id="fileInfo">No files chosen</p>
-            </div>
-
-            <div class="file-list" id="fileList" style="display: none;">
-                <h6 class="mb-2">Selected Files:</h6>
-                <div id="fileItems"></div>
-            </div>
-
-            <div class="upload-progress" id="uploadProgress">
-                <div class="progress">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                        style="width: 0%"></div>
-                </div>
-                <p class="text-center mt-2" id="uploadStatus">Uploading...</p>
-            </div>
-
-            <div class="text-center mt-4">
-                <button type="submit" class="btn btn-primary btn-lg px-5" id="uploadButton" disabled>
-                    Upload and Analyze All Files
-                </button>
-            </div>
-        </form>
-
-        
     </div>
 </div>

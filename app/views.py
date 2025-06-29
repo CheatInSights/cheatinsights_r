@@ -2,27 +2,28 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
-from .cis_extractor import Extract
-from .cis_json_to_html import DocumentReconstructor
-from .cis_statistics import DOCXStatistics
+
 import io
 import json
 from collections import defaultdict
+
+from .cis_extractor import Extract
+from .cis_json_to_html import DocumentReconstructor
+from .cis_statistics import DOCXStatistics
+
 
 def home(request):
     """Home page view"""
     return render(request, 'app/home.html')
 
 def dashboard_page(request):
+    """Render the dashboard page."""
     return render(request, 'app/dashboard.html')
-
-
-def upload_page(request):
-    return render(request, 'app/upload.html')
 
 
 @csrf_exempt
 def handle_multiple_uploads(request):
+    """Handle multiple document uploads and process them for RSID analysis."""
     if request.method == 'POST':
         if 'documents' not in request.FILES:
             return JsonResponse({'error': 'No files uploaded'}, status=400)
@@ -31,7 +32,7 @@ def handle_multiple_uploads(request):
         if not files:
             return JsonResponse({'error': 'No files uploaded'}, status=400)
         
-        print("\n========== DEBUG: PROCESSING MULTIPLE FILES ==========")
+        print("\n========== DEBUG: SESSION FILE POST REQUEST ==========")
         print(f"Number of files uploaded: {len(files)}")
         
         # Validate all files are .docx
@@ -44,6 +45,7 @@ def handle_multiple_uploads(request):
         try:
             # --- First Pass: Extract data and create statistics objects ---
             for file in files:
+                print(f"\tDEBUG: Processing file: {file.name}")
                 file_content = file.read()
                 file_obj = io.BytesIO(file_content)
                 extractor = Extract(file_obj)

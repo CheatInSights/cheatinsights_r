@@ -59,7 +59,7 @@
     }
 
     #results {
-      display: none;
+      display: flex;
     }
 
     /* Graph container styles */
@@ -90,13 +90,14 @@
     /* File list styles */
     .file-list {
       margin-top: 1rem;
-      max-height: 40vh;
+      max-height: 35vh;
       height: auto;
       overflow-y: scroll;
       border: 1px solid #dee2e6;
       border-radius: 5px;
       padding: 0.5rem;
       background: white;
+      text-align: left;
     }
 
     .file-item {
@@ -120,6 +121,7 @@
     .file-size {
       color: #6c757d;
       font-size: 0.8rem;
+      margin-right: 1rem;
     }
 
     .remove-file {
@@ -186,6 +188,8 @@
       padding: 1rem;
       background: #f8f9fa;
       border-radius: 8px;
+      overflow-y: scroll;
+      height: 100px;
     }
 
     .legend {
@@ -625,7 +629,10 @@
 
     /* Singleview page - special overflow handling */
     .main_content > div:nth-child(3) {
-      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .utility-bar {
       overflow-x: hidden;
     }
   </style>
@@ -638,7 +645,7 @@
     <div class="row g-0">
       <div class="col-2 menu1 border border-secondary">
         <div class="row ">
-          <div class="w-100 mt-5  text-center ">CheatInSights</div>
+          <div class="w-100 mt-5  text-center "><a href="/">CheatInSights</a></div>
           <button id="upload_button" type="button" class="btn btn-light w-100 mt-5">Upload</button>
           <button id="files_button" type="button" class="btn btn-light w-100 mt-5">Files</button>
           <button id="singleview_button" type="button" class="btn btn-light w-100 mt-5">Focus</button>
@@ -673,6 +680,7 @@
       const filesButton = document.getElementById('files_button');
       const singleviewButton = document.getElementById('singleview_button');
       const graphsButton = document.getElementById('graphs_button');
+      const signoutButton = document.getElementById('signout_button');
       
       console.log('Upload button:', document.getElementById('upload_button'));
       console.log('Files button:', document.getElementById('files_button'));
@@ -690,7 +698,10 @@
         singleviewButton.classList.remove('active');
         graphsButton.classList.remove('active');
       }
-
+      signoutButton.addEventListener('click', function () {
+        // not actual sign out. place hodler for now
+        window.location.href = '/';
+      })
       uploadButton.addEventListener('click', function () {
         console.log("Action: clicked Upload Button");
         removeActiveFromAllButtons();
@@ -720,7 +731,7 @@
         
         uploadSection.style.display = 'none';
         filesSection.style.display = 'none';
-        singleviewSection.style.display = 'block';
+        singleviewSection.style.display = 'flex';
         graphsSection.style.display = 'none';
       });
 
@@ -745,7 +756,7 @@
       uploadButton.classList.add('active');
     });
   </script>
-  <script src="{% static 'upload_page.js' %}"></script>
+  <script src="{% static 'upload_page.js' %}?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 </body>

@@ -84,6 +84,8 @@ document.addEventListener('DOMContentLoaded', function() {
         updateFileList();
         updateFileInfo();
     }
+
+    // Make removeFile globally accessible
     window.removeFile = removeFile
 
     function updateFileList() {
@@ -180,7 +182,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Create table row
             const row = document.createElement('tr');
             row.className = index === 0 ? 'active' : '';
-            row.onclick = () => window.switchDocument(fileName);
+            row.onclick = () => window.selectDocument(fileName);
             
             row.innerHTML = `
                 <td class="file-filename">${fileName}</td>
@@ -199,6 +201,32 @@ document.addEventListener('DOMContentLoaded', function() {
             documentTabs.appendChild(row);
         });
     }
+
+    window.selectDocument = function(fileName) {
+        // Update active row
+        document.querySelectorAll('#documentTabs tr').forEach(row => {
+            row.classList.remove('active');
+        });
+        
+        // Find and activate the clicked row
+        const rows = document.querySelectorAll('#documentTabs tr');
+        for (let row of rows) {
+            const filenameCell = row.querySelector('.file-filename');
+            if (filenameCell && filenameCell.textContent === fileName) {
+                row.classList.add('active');
+                break;
+            }
+        }
+
+        // Display selected document
+        displayDocument(fileName);
+        
+        // // Simulate clicking the Focus button to switch to singleview page
+        // const focusButton = document.getElementById('singleview_button');
+        // if (focusButton) {
+        //     focusButton.click();
+        // }
+    };
 
     window.switchDocument = function(fileName) {
         // Update active row
@@ -712,7 +740,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         } else if (response.metrics) {
-            // Single file upload
+            // Single file upload - set up documentResults for consistency
+            const fileName = selectedFiles[0].name;
+            documentResults = {
+                [fileName]: {
+                    metrics: response.metrics,
+                    html: response.html,
+                    data: response.data,
+                    settings_rsids: response.settings_rsids,
+                    metadata: response.metadata
+                }
+            };
+            
+            // Create document tabs for single file
+            createDocumentTabs();
+            
+            // Display the single document
+            displayDocument(fileName);
+            
+            // Display suspicion score
             displaySuspicionScore(response.metrics);
         }
 
@@ -721,7 +767,7 @@ document.addEventListener('DOMContentLoaded', function() {
             displaySharedRsids(response.shared_rsids);
         }
 
-        // results.style.display = 'block';
+
     }
 
     fileInput.addEventListener('change', function () {
@@ -732,6 +778,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle form submission
     document.getElementById('uploadForm').addEventListener('submit', function (e) {
+        console.log("Submit pressed");
         e.preventDefault();
 
         // Hide shared RSIDs section on new upload
@@ -751,6 +798,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         uploadProgress.style.display = 'block';
         uploadButton.disabled = true;
+        console.log("reached here");
 
         xhr.upload.addEventListener('progress', function (e) {
             if (e.lengthComputable) {
@@ -758,25 +806,26 @@ document.addEventListener('DOMContentLoaded', function() {
                 progressBar.style.width = percentComplete + '%';
             }
         });
+        console.log("reached here2");
 
         xhr.addEventListener('load', function () {
             if (xhr.status === 200) {
+                console.log("processing complete");
                 uploadStatus.textContent = 'Processing Complete!';
                 
                 // Remove all children from fileList and hide it
-                const fileList = document.getElementById('fileList');
+                //const fileList = document.getElementById('fileList');
                 
-                if (fileList) {
-                    fileList.innerHTML = '';
-                    fileList.style.display = 'none';
-                }
+                // if (fileList) {
+                //     fileList.innerHTML = '';
+                //     fileList.style.display = 'none';
+                // }
                 
                 const response = JSON.parse(xhr.responseText);
-                if (response.results) {
-                    displayResults(response);
-                    // add here
-                    generateMetricsDictionary();
-                }
+                displayResults(response);
+
+                // Generate metrics dictionary for both single and multiple file uploads
+                generateMetricsDictionary();
             } else {
                 const response = JSON.parse(xhr.responseText);
                 uploadStatus.textContent = response.error || 'Upload failed. Please try again.';
@@ -889,6 +938,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Helper: Calculate mean and standard deviation
     function calculateStats(values) {
+        if (values.length === 0) {
+            return { mean: 0, stdDev: 0 };
+        }
+        if (values.length === 1) {
+            return { mean: values[0], stdDev: 0 };
+        }
+     
         const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
         const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
         const stdDev = Math.sqrt(variance);
@@ -906,11 +962,17 @@ document.addEventListener('DOMContentLoaded', function() {
         if (normalised) {
             const values = roundedData.map(item => Object.values(item)[0]);
             const { mean, stdDev } = calculateStats(values);
-            roundedData = roundedData.map(item => {
-                const key = Object.keys(item)[0];
-                const z = (item[key] - mean) / stdDev;
-                return { [key]: Math.round(z * 100) / 100 };
-            });
+            
+            // Skip normalization if standard deviation is 0 (single data point)
+            if (stdDev === 0) {
+                console.log('Skipping normalization for single data point');
+            } else {
+                roundedData = roundedData.map(item => {
+                    const key = Object.keys(item)[0];
+                    const z = (item[key] - mean) / stdDev;
+                    return { [key]: Math.round(z * 100) / 100 };
+                });
+            }
         }
 
         if (count) {
@@ -968,64 +1030,70 @@ document.addEventListener('DOMContentLoaded', function() {
         if (isNormalised) {
             const xVals = chartData.map(p => p.x);
             const { mean, stdDev } = calculateStats(xVals);
-            const minX = Math.min(...xVals);
-            const maxX = Math.max(...xVals);
-            const peakY = 1 / (stdDev * Math.sqrt(2 * Math.PI));
-            const scaleFactor = maxY / peakY;
+            
+            // Skip normal distribution for single data point (stdDev = 0)
+            if (stdDev === 0) {
+                console.log('Skipping normal distribution for single data point');
+            } else {
+                const minX = Math.min(...xVals);
+                const maxX = Math.max(...xVals);
+                const peakY = 1 / (stdDev * Math.sqrt(2 * Math.PI));
+                const scaleFactor = maxY / peakY;
 
-            // Create multiple datasets for different standard deviation ranges
-            const stdDevRanges = [
-                { range: 3, color: 'rgba(255, 100, 0, 0.2)', label: '±3σ' },
-                { range: 2, color: 'rgba(255, 180, 0, 0.4)', label: '±2σ' },
-                { range: 1, color: 'rgba(255, 255, 0, 0.5)', label: '±1σ' }
-            ];
+                // Create multiple datasets for different standard deviation ranges
+                const stdDevRanges = [
+                    { range: 3, color: 'rgba(255, 100, 0, 0.2)', label: '±3σ' },
+                    { range: 2, color: 'rgba(255, 180, 0, 0.4)', label: '±2σ' },
+                    { range: 1, color: 'rgba(255, 255, 0, 0.5)', label: '±1σ' }
+                ];
 
-            // Add filled areas for each standard deviation range (layered effect)
-            stdDevRanges.forEach(({ range, color, label }) => {
-                const fillCurve = [];
-                const startX = mean - (range * stdDev);
-                const endX = mean + (range * stdDev);
+                // Add filled areas for each standard deviation range (layered effect)
+                stdDevRanges.forEach(({ range, color, label }) => {
+                    const fillCurve = [];
+                    const startX = mean - (range * stdDev);
+                    const endX = mean + (range * stdDev);
 
-                // Generate curve points for this range
-                for (let x = startX; x <= endX; x += (endX - startX) / 50) {
+                    // Generate curve points for this range
+                    for (let x = startX; x <= endX; x += (endX - startX) / 50) {
+                        const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
+                            Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2)) * scaleFactor;
+                        fillCurve.push({ x, y });
+                    }
+
+                    datasets.unshift({
+                        label: label,
+                        data: fillCurve,
+                        type: 'line',
+                        borderColor: color.replace(/[\d.]+\)$/, '0.8)'),
+                        backgroundColor: color,
+                        borderWidth: 1,
+                        fill: true,
+                        pointRadius: 0,
+                        tension: 0.4,
+                        order: 3  // Lower order = appears behind
+                    });
+                });
+
+                // Add the main normal distribution curve on top of fills but behind points
+                const curve = [];
+                for (let x = minX; x <= maxX; x += (maxX - minX) / 50) {
                     const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
                         Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2)) * scaleFactor;
-                    fillCurve.push({ x, y });
+                    curve.push({ x, y });
                 }
 
                 datasets.unshift({
-                    label: label,
-                    data: fillCurve,
+                    label: 'Normal Distribution',
+                    data: curve,
                     type: 'line',
-                    borderColor: color.replace(/[\d.]+\)$/, '0.8)'),
-                    backgroundColor: color,
-                    borderWidth: 1,
-                    fill: true,
+                    borderColor: 'rgba(0, 0, 255, 0.8)',
+                    borderWidth: 2,
+                    fill: false,
                     pointRadius: 0,
                     tension: 0.4,
-                    order: 3  // Lower order = appears behind
+                    order: 2  // Between fills and points
                 });
-            });
-
-            // Add the main normal distribution curve on top of fills but behind points
-            const curve = [];
-            for (let x = minX; x <= maxX; x += (maxX - minX) / 50) {
-                const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
-                    Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2)) * scaleFactor;
-                curve.push({ x, y });
             }
-
-            datasets.unshift({
-                label: 'Normal Distribution',
-                data: curve,
-                type: 'line',
-                borderColor: 'rgba(0, 0, 255, 0.8)',
-                borderWidth: 2,
-                fill: false,
-                pointRadius: 0,
-                tension: 0.4,
-                order: 2  // Between fills and points
-            });
         }
 
         new Chart(canvas, {
@@ -1162,6 +1230,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Build metrics dictionary from documentResults
     function generateMetricsDictionary() {
+        console.trace("Call stack for generateMetricsDictionary:");
         Object.entries(documentResults).forEach(([filename, fileData]) => {
             if (fileData.metrics) {
                 Object.entries(fileData.metrics).forEach(([metricKey, metricValue]) => {
