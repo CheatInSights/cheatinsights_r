@@ -1,0 +1,292 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}Contact Us - CheatInSights{% endblock %}
+
+{% block content %}
+<div class="container-fluid" style="background-color: #1b1b1b; padding: 120px 0;">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="bg-dark rounded-3 shadow p-5" style="border: 1px solid #3a3a3a;">
+                <h1 class="text-center mb-5" style="color: #4f46e5; font-weight: 600;">Contact CheatInSights</h1>
+                <p class="text-center text-light mb-5">Get in touch with us to learn more about our document analysis platform for academic integrity.</p>
+                
+                <form id="contactForm">
+                    <!-- Contact Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="firstName" class="form-label fw-bold text-light">First Name *</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label fw-bold text-light">Last Name *</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+
+                    <!-- Organization Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="organization" class="form-label fw-bold text-light">Organization/University *</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="organization" name="organization" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="jobTitle" class="form-label fw-bold text-light">Job Title</label>
+                            <input type="text" class="form-control bg-dark text-light border-secondary" id="jobTitle" name="jobTitle">
+                        </div>
+                    </div>
+
+                    <!-- Contact Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="emailAddress" class="form-label fw-bold text-light">Email Address *</label>
+                            <input type="email" class="form-control bg-dark text-light border-secondary" id="emailAddress" name="emailAddress" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phoneNumber" class="form-label fw-bold text-light">Phone Number</label>
+                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phoneNumber" name="phoneNumber">
+                        </div>
+                    </div>
+
+                    <!-- Inquiry Type and Details -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="inquiryType" class="form-label fw-bold text-light">Inquiry Type *</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="inquiryType" name="inquiryType" required>
+                                <option value="">Select inquiry type...</option>
+                                <option value="demo">Request Demo</option>
+                                <option value="pricing">Pricing Information</option>
+                                <option value="integration">Integration Support</option>
+                                <option value="technical">Technical Questions</option>
+                                <option value="partnership">Partnership Opportunities</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="studentCount" class="form-label fw-bold text-light">Approximate Student Count</label>
+                            <select class="form-select bg-dark text-light border-secondary" id="studentCount" name="studentCount">
+                                <option value="">Select range...</option>
+                                <option value="1-1000">1-1,000 students</option>
+                                <option value="1001-5000">1,001-5,000 students</option>
+                                <option value="5001-10000">5,001-10,000 students</option>
+                                <option value="10001-25000">10,001-25,000 students</option>
+                                <option value="25000+">25,000+ students</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Message -->
+                    <div class="mb-4">
+                        <label for="message" class="form-label fw-bold text-light">Message *</label>
+                        <textarea class="form-control bg-dark text-light border-secondary" id="message" name="message" rows="5" placeholder="Tell us about your academic integrity needs and how CheatInSights can help..." required></textarea>
+                    </div>
+
+                    <!-- File Upload -->
+                    <div class="mb-4">
+                        <label for="fileUpload" class="form-label fw-bold text-light">Upload Documents (Optional)</label>
+                        <div class="upload-area" id="uploadArea">
+                            <div class="upload-content text-center p-5">
+                                <i class="fas fa-cloud-upload-alt mb-3" style="font-size: 3rem; color: #4f46e5;"></i>
+                                <h5 class="text-light">Drag & Drop files here</h5>
+                                <p class="text-muted">or</p>
+                                <input type="file" class="form-control" id="fileUpload" name="documents" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileUpload').click()">
+                                    Browse Files
+                                </button>
+                                <p class="text-muted mt-2">Supported formats: PDF, DOC, DOCX, JPG, PNG</p>
+                            </div>
+                            <div id="fileList" class="mt-3" style="display: none;">
+                                <h6 class="text-light">Selected Files:</h6>
+                                <ul id="selectedFiles" class="list-group list-group-flush bg-dark"></ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="text-center">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary btn-lg px-5 py-3" style="background-color: #4f46e5; border-color: #4f46e5;">
+                            Send Message
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.upload-area {
+    border: 2px dashed #4f46e5;
+    border-radius: 10px;
+    background-color: #2a2a2a;
+    transition: all 0.3s ease;
+}
+
+.upload-area.dragover {
+    background-color: #3a3a3a;
+    border-color: #6f42c1;
+    transform: scale(1.02);
+}
+
+.upload-content {
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
+    background-color: #2a2a2a !important;
+    color: #fff !important;
+}
+
+.form-control, .form-select {
+    background-color: #2a2a2a !important;
+    border-color: #3a3a3a !important;
+    color: #fff !important;
+}
+
+.form-control::placeholder {
+    color: #6c757d !important;
+}
+
+.btn-primary:hover {
+    background-color: #4338ca !important;
+    border-color: #4338ca !important;
+}
+
+.list-group-item {
+    background-color: #2a2a2a !important;
+    border-color: #3a3a3a !important;
+    color: #fff !important;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('fileUpload');
+    const fileList = document.getElementById('fileList');
+    const selectedFiles = document.getElementById('selectedFiles');
+    const form = document.getElementById('contactForm');
+
+    // Drag and drop functionality
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        const files = e.dataTransfer.files;
+        handleFiles(files);
+    });
+
+    // File input change
+    fileInput.addEventListener('change', function(e) {
+        handleFiles(e.target.files);
+    });
+
+    function handleFiles(files) {
+        if (files.length > 0) {
+            fileList.style.display = 'block';
+            selectedFiles.innerHTML = '';
+            
+            Array.from(files).forEach(file => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    <span>${file.name}</span>
+                    <span class="badge bg-primary rounded-pill">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                `;
+                selectedFiles.appendChild(li);
+            });
+        }
+    }
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Basic validation
+        const requiredFields = form.querySelectorAll('[required]');
+        let isValid = true;
+        
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                field.classList.remove('is-invalid');
+            }
+        });
+
+        if (isValid) {
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+            submitBtn.disabled = true;
+
+            // Prepare form data
+            const formData = {
+                firstName: form.firstName.value,
+                lastName: form.lastName.value,
+                organization: form.organization.value,
+                jobTitle: form.jobTitle.value,
+                emailAddress: form.emailAddress.value,
+                phoneNumber: form.phoneNumber.value,
+                inquiryType: form.inquiryType.value,
+                studentCount: form.studentCount.value,
+                message: form.message.value
+            };
+
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Send form data to Django backend
+            fetch('/contact/submit/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    form.reset();
+                    fileList.style.display = 'none';
+                    selectedFiles.innerHTML = '';
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Sorry, there was an error sending your message. Please try again or contact us directly.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+            });
+        } else {
+            alert('Please fill in all required fields.');
+        }
+    });
+});
+</script>
+{% endblock %}

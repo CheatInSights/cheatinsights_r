@@ -2,6 +2,8 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
+from django.views.decorators.http import require_http_methods
+from django.core.mail import send_mail
 
 import io
 import json
@@ -154,3 +156,84 @@ def handle_multiple_uploads(request):
             return JsonResponse({'error': f'Error processing files: {str(e)}'}, status=500)
     
     return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+
+@csrf_exempt
+@require_http_methods(["POST"])
+def contact_submit(request):
+    """
+    Handle contact form submission and send email
+    """
+    try:
+        data = json.loads(request.body)
+        
+        # Extract form data
+        first_name = data.get('firstName', '')
+        last_name = data.get('lastName', '')
+        organization = data.get('organization', '')
+        job_title = data.get('jobTitle', '')
+        email = data.get('emailAddress', '')
+        phone = data.get('phoneNumber', '')
+        inquiry_type = data.get('inquiryType', '')
+        student_count = data.get('studentCount', '')
+        message = data.get('message', '')
+        
+        # Validate required fields
+        if not all([first_name, last_name, organization, email, inquiry_type, message]):
+            return JsonResponse({
+                'success': False,
+                'message': 'Please fill in all required fields.'
+            }, status=400)
+        
+        # Prepare email content
+        subject = f"CheatInSights Contact: {inquiry_type.title()} - {first_name} {last_name}"
+        
+        email_body = f"""
+New Contact Form Submission
+
+Name: {first_name} {last_name}
+Organization: {organization}
+Job Title: {job_title}
+Email: {email}
+Phone: {phone}
+Inquiry Type: {inquiry_type}
+Student Count: {student_count}
+
+Message:
+{message}
+
+---
+This message was sent from the CheatInSights contact form.
+        """
+        
+        # Send email
+        send_mail(
+            subject=subject,
+            message=email_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[settings.CONTACT_EMAIL],  # Configure this in settings
+            fail_silently=False,
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Thank you for your message! We will get back to you soon.'
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid form data.'
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': 'An error occurred while sending your message. Please try again.'
+        }, status=500)
+
+
+def contact(request):
+    """
+    Render the contact page
+    """
+    return render(request, 'app/contact.html')
