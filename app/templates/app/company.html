@@ -909,4 +909,117 @@
         </div>
     </div>
 </section>
+
+<!-- Anime.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to animate statistics numbers
+    function animateStats() {
+        const statNumbers = document.querySelectorAll('.stat-number');
+        
+        statNumbers.forEach(function(element) {
+            const finalValue = element.textContent;
+            const isPercentage = finalValue.includes('%');
+            const isPlus = finalValue.includes('+');
+            const isSlash = finalValue.includes('/');
+            
+            // Extract numeric value
+            let numericValue;
+            if (isSlash) {
+                // Handle "24/7" case
+                numericValue = 24;
+            } else {
+                numericValue = parseFloat(finalValue.replace(/[^\d.]/g, ''));
+            }
+            
+            // Set initial value to 0
+            element.textContent = '0';
+            
+            // Create animation
+            anime({
+                targets: element,
+                textContent: [0, numericValue],
+                round: 1,
+                duration: 4000,
+                easing: 'easeOutCubic',
+                update: function(anim) {
+                    let currentValue = Math.round(anim.animations[0].currentValue);
+                    
+                    // Format the display value
+                    if (isPercentage) {
+                        element.textContent = currentValue + '%';
+                    } else if (isPlus) {
+                        element.textContent = currentValue + '+';
+                    } else if (isSlash) {
+                        element.textContent = currentValue + '/7';
+                    } else {
+                        element.textContent = currentValue;
+                    }
+                }
+            });
+        });
+    }
+    
+    // Function to animate opacity on load
+    function animateOpacityOnLoad() {
+        const statsSection = document.querySelector('.hero-stats');
+        
+        if (statsSection) {
+            // Set initial opacity to 0
+            statsSection.style.opacity = '0';
+            statsSection.style.transform = 'translateY(20px)';
+            
+            // Animate opacity and position
+            anime({
+                targets: statsSection,
+                opacity: [0, 1],
+                translateY: [20, 0],
+                duration: 800,
+                easing: 'easeOutCubic',
+                complete: function() {
+                    // After opacity animation completes, start number animation
+                    setTimeout(function() {
+                        animateStats();
+                    }, 200); // Small delay before starting number animation
+                }
+            });
+        }
+    }
+    
+    // Check if stats are already visible on page load
+    const statsSection = document.querySelector('.hero-stats');
+    
+    if (statsSection) {
+        // Check if element is already in viewport
+        const rect = statsSection.getBoundingClientRect();
+        const isVisible = rect.top < window.innerHeight && rect.bottom > 0;
+        
+        if (isVisible) {
+            // If already visible, start with opacity animation
+            animateOpacityOnLoad();
+        } else {
+            // Use Intersection Observer for elements not yet visible
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (entry.isIntersecting) {
+                        // Start with opacity animation, then number animation
+                        animateOpacityOnLoad();
+                        
+                        // Only animate once
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.1, // Trigger when just 10% is visible (more responsive)
+                rootMargin: '0px 0px -10px 0px' // Trigger almost immediately
+            });
+            
+            observer.observe(statsSection);
+        }
+    }
+});
+</script>
+
 {% endblock %} 
