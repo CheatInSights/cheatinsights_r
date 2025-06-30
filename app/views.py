@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
 from django.core.mail import send_mail
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import ensure_csrf_cookie
 
@@ -315,4 +315,27 @@ def signin(request):
     
     # GET request - render signin page
     return render(request, 'app/signin.html')
+
+
+def signout(request):
+    """
+    Handle signout and logout with comprehensive session cleanup
+    """
+    # Logout the user (this handles Django's authentication)
+    logout(request)
+    
+    # Clear session data
+    request.session.flush()
+    
+    # Create response to redirect to home
+    response = redirect('/')
+    
+    # Clear any custom cookies that might exist
+    response.delete_cookie('sessionid')
+    response.delete_cookie('csrftoken')
+    
+    # Set session cookie to expire immediately
+    response.set_cookie('sessionid', '', max_age=0, expires='Thu, 01 Jan 1970 00:00:00 GMT')
+    
+    return response
 
