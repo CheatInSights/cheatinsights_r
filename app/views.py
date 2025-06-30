@@ -75,15 +75,20 @@ def handle_multiple_uploads(request):
                 doc_data_list.append(doc_data)
 
             # --- Cross-Document Author Analysis ---
-            # Build a mapping: author -> list of document indices
             author_to_docs = defaultdict(list)
+            modifier_to_docs = defaultdict(list) # For the new rule
             for i, doc_data in enumerate(doc_data_list):
                 author = doc_data["statistics_obj"].get_author()
                 if author:
                     author_to_docs[author].append(i)
-            
-            # Find authors that appear in more than one document
+                
+                modifier = doc_data["statistics_obj"].get_last_modified_by()
+                if modifier:
+                    modifier_to_docs[modifier].append(i)
+
+            # Find authors/modifiers that appear in more than one document
             colluding_authors = {author: indices for author, indices in author_to_docs.items() if len(indices) > 1}
+            colluding_modifiers = {modifier: indices for modifier, indices in modifier_to_docs.items() if len(indices) > 1}
 
             # --- Second Pass: Finalize results with cross-doc insights ---
             results = {}
@@ -100,6 +105,15 @@ def handle_multiple_uploads(request):
                         f"Author '{author}' also appears in other uploaded documents (possible collusion)."
                     )
                     print(f"[DEBUG] {doc_data['filename']} - After author collusion: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
+                
+                # Cross-document Rule 2: 'Last Modified By' appears in multiple documents
+                modifier = doc_data["statistics_obj"].get_last_modified_by()
+                if modifier in colluding_modifiers:
+                    suspicion_result['total_score'] += 30
+                    suspicion_result['factors'].append(
+                        f"Editor '{modifier}' also appears in other uploaded documents (possible collusion)."
+                    )
+                    print(f"[DEBUG] {doc_data['filename']} - After modifier collusion: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
                 
                 # Generate HTML for the document
                 json_data = json.dumps(doc_data["paragraphs"], ensure_ascii=False)
@@ -132,7 +146,7 @@ def handle_multiple_uploads(request):
                 for doc in docs:
                     doc_to_shared_rsids[doc].add(rsid)
 
-            # Cross-document Rule 2: RSID(s) appear in multiple documents
+            # Cross-document Rule 3: RSID(s) appear in multiple documents
             for doc_name, shared in doc_to_shared_rsids.items():
                 if shared:
                     results[doc_name]['metrics']['total_score'] += 30
@@ -148,7 +162,7 @@ def handle_multiple_uploads(request):
 
             # --- Recalculate normalized score after all rules applied ---
             # Adjust this if you add/remove rules or change their weights
-            max_possible_score = sum([15, 25, 15, 25, 30, 30])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, author collusion, RSID collusion
+            max_possible_score = sum([15, 25, 15, 25, 30, 30, 30])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, author collusion, modifier collusion, RSID collusion
             for doc_name, result in results.items():
                 result['metrics']['score'] = round((result['metrics']['total_score'] / max_possible_score) * 100, 2)
 
