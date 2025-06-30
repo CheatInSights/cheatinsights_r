@@ -170,6 +170,16 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
 
+# Session Configuration
+SESSION_COOKIE_NAME = 'cheatinsights_session'
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_AGE = 3600  # 1 hour in seconds
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+# Remember Me Configuration
+REMEMBER_ME_DURATION = 30 * 24 * 60 * 60  # 30 days in seconds
+
 CORS_ALLOWED_ORIGINS = [
     "https://server-production-b508.up.railway.app",
     "http://localhost:8000",

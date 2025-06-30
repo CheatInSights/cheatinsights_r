@@ -27,7 +27,7 @@
     .upload-area {
       border: 2px dashed var(--primary-color);
       border-radius: 10px;
-      padding: 2rem;
+      padding: 1rem;
       text-align: center;
       background-color: #f8f9fa;
       transition: all 0.3s ease;
@@ -47,10 +47,14 @@
       display: none;
     }
 
+    .fileInfo {
+      margin-bottom: 0px;
+    }
+
     .upload-icon {
       font-size: 3rem;
       color: var(--primary-color);
-      margin-bottom: 1rem;
+      /* margin-bottom: 1rem; */
     }
 
     .upload-progress {
@@ -651,11 +655,20 @@
     <div class="row g-0">
       <div class="col-2 menu1 border border-secondary">
         <div class="row ">
-          <div class="w-100 mt-5  text-center "><a href="/">CheatInSights</a></div>
+          <div class="text-center mt-4">
+            <a href="/">
+              <img src="{% static 'cis_logo.png' %}" alt="CIS Logo" class="img-fluid" style="max-width: 100px;">
+            </a>
+          </div>
           <button id="upload_button" type="button" class="btn btn-light w-100 mt-5">Upload</button>
           <button id="files_button" type="button" class="btn btn-light w-100 mt-5">Files</button>
           <button id="singleview_button" type="button" class="btn btn-light w-100 mt-5">Focus</button>
           <button id="graphs_button" type="button" class="btn btn-light w-100 mt-5">Graphs</button>
+          <div class="w-100 mt-5 text-center">
+            <span>logged in:</span>
+            <br>
+            <span>{{ user.username }}</span>
+          </div>
           <button id="signout_button" type="button" class="btn btn-light w-100 mt-5">Sign Out</button>
         </div>
 

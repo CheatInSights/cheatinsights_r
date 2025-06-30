@@ -259,6 +259,10 @@ def signin(request):
     """
     Handle signin page rendering and authentication
     """
+    # Redirect authenticated users to dashboard
+    if request.user.is_authenticated:
+        return redirect('/dashboard/')
+    
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -287,8 +291,9 @@ def signin(request):
                     session_expiry_time = request.session.get_expiry_age()
                     print(f"DEBUG: Session expiry time (in seconds): {session_expiry_time}")
                 else:
-                    # Set session to expire in 30 days
-                    request.session.set_expiry(30 * 24 * 60 * 60)
+                    # Set session to expire based on configured duration
+                    remember_me_duration = getattr(settings, 'REMEMBER_ME_DURATION', 30 * 24 * 60 * 60)
+                    request.session.set_expiry(remember_me_duration)
                 
                 return JsonResponse({
                     'success': True,
