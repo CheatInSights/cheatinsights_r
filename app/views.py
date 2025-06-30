@@ -1,9 +1,12 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.conf import settings
 from django.views.decorators.http import require_http_methods
 from django.core.mail import send_mail
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 import io
 import json
@@ -18,8 +21,12 @@ def home(request):
     """Home page view"""
     return render(request, 'app/home.html')
 
+@login_required(login_url='/signin/')
 def dashboard_page(request):
     """Render the dashboard page."""
+    print(f"DEBUG: User authenticated: {request.user.is_authenticated}")
+    print(f"DEBUG: User: {request.user}")
+    print(f"DEBUG: Session ID: {request.session.session_key}")
     return render(request, 'app/dashboard.html')
 
 
@@ -246,3 +253,66 @@ def company(request):
     Render the company page
     """
     return render(request, 'app/company.html')
+
+@ensure_csrf_cookie
+def signin(request):
+    """
+    Handle signin page rendering and authentication
+    """
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data.get('username', '').strip()
+            password = data.get('password', '')
+            remember_me = data.get('rememberMe', False)
+            
+            # Validate required fields
+            if not username or not password:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Please provide both username and password.'
+                }, status=400)
+            
+            # Authenticate user
+            user = authenticate(request, username=username, password=password)
+            
+            if user is not None:
+                # Login successful
+                login(request, user)
+                
+                # Handle remember me functionality
+                if not remember_me:
+                    # Set session to expire when browser closes
+                    request.session.set_expiry(0)
+                    session_expiry_time = request.session.get_expiry_age()
+                    print(f"DEBUG: Session expiry time (in seconds): {session_expiry_time}")
+                else:
+                    # Set session to expire in 30 days
+                    request.session.set_expiry(30 * 24 * 60 * 60)
+                
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Login successful',
+                    'redirect_url': '/dashboard/'
+                })
+            else:
+                # Authentication failed
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid username or password.'
+                }, status=401)
+                
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid request data.'
+            }, status=400)
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': 'An error occurred during authentication.'
+            }, status=500)
+    
+    # GET request - render signin page
+    return render(request, 'app/signin.html')
+

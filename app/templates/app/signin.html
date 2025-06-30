@@ -1,0 +1,581 @@
+{% extends "app/base.html" %}
+{% load static %}
+
+{% block title %}Sign In - CheatInSights{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dark Mode Design System */
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #8b5cf6;
+        --accent: #a855f7;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #0f172a;
+        --light: #1e293b;
+        --white: #ffffff;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-300: #cbd5e1;
+        --gray-400: #94a3b8;
+        --gray-500: #64748b;
+        --gray-600: #475569;
+        --gray-700: #334155;
+        --gray-800: #1e293b;
+        --gray-900: #0f172a;
+        --dark-bg: #0a0a0a;
+        --dark-surface: #111111;
+        --dark-card: #1a1a1a;
+        --dark-border: #2a2a2a;
+        --dark-text: #e5e7eb;
+        --dark-text-secondary: #9ca3af;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    }
+
+    /* Base Styles - Dark Mode */
+    body {
+        background-color: var(--dark-bg);
+        color: var(--dark-text);
+        line-height: 1.7;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Override main-content for signin page */
+    .main-content {
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+        height: 100vh;
+    }
+
+    /* Sign In Container */
+    .signin-container {
+        background: linear-gradient(135deg, var(--gray-900) 0%, var(--dark-bg) 100%);
+        width: 100%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .signin-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        padding: 2rem;
+    }
+
+    .signin-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.5;
+    }
+
+    /* Sign In Card */
+    .signin-card {
+        background: var(--dark-card);
+        border-radius: 24px;
+        padding: 3rem;
+        box-shadow: var(--shadow-xl);
+        border: 1px solid var(--dark-border);
+        position: relative;
+        z-index: 2;
+        width: 100%;
+        max-width: 450px;
+        backdrop-filter: blur(10px);
+        overflow:hidden;
+    }
+
+    .signin-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 24px 24px 0 0;
+    }
+
+    /* Header */
+    .signin-header {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+
+    .signin-badge {
+        display: inline-block;
+        background: rgba(99, 102, 241, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+    }
+
+    .signin-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .signin-subtitle {
+        color: var(--dark-text-secondary);
+        font-size: 1rem;
+    }
+
+    /* Form Styles */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+        display: block;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 12px;
+        color: var(--dark-text);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        outline: none;
+    }
+
+    .form-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        background: var(--dark-card);
+    }
+
+    .form-input::placeholder {
+        color: var(--dark-text-secondary);
+    }
+
+    /* Password Input Container */
+    .password-container {
+        position: relative;
+    }
+
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--dark-text-secondary);
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+        color: var(--primary);
+    }
+
+    /* Remember Me & Forgot Password */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        font-size: 0.875rem;
+    }
+
+    .remember-me {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--dark-text-secondary);
+    }
+
+    .remember-me input[type="checkbox"] {
+        width: 16px;
+        height: 16px;
+        accent-color: var(--primary);
+    }
+
+    .forgot-password {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.3s ease;
+    }
+
+    .forgot-password:hover {
+        color: var(--secondary);
+    }
+
+    /* Submit Button */
+    .signin-btn {
+        width: 100%;
+        padding: 0.875rem 2rem;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+    .signin-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .signin-btn:active {
+        transform: translateY(0);
+    }
+
+    /* Divider */
+    .divider {
+        display: flex;
+        align-items: center;
+        margin: 2rem 0;
+        color: var(--dark-text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .divider::before,
+    .divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--dark-border);
+    }
+
+    .divider span {
+        padding: 0 1rem;
+    }
+
+    /* Social Login */
+    .social-login {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .social-btn {
+        flex: 1;
+        padding: 0.75rem 1rem;
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 12px;
+        color: var(--dark-text);
+        text-decoration: none;
+        text-align: center;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .social-btn:hover {
+        background: var(--dark-card);
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-2px);
+    }
+
+    /* Sign Up Link */
+    .signup-link {
+        text-align: center;
+        color: var(--dark-text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .signup-link a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 0.25rem;
+    }
+
+    .signup-link a:hover {
+        color: var(--secondary);
+    }
+
+    /* Error Messages */
+    .error-message {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        color: var(--danger);
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1rem;
+        font-size: 0.875rem;
+        display: none;
+    }
+
+    .form-input.error {
+        border-color: var(--danger);
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+    }
+
+    /* Loading State */
+    .signin-btn.loading {
+        opacity: 0.7;
+        cursor: not-allowed;
+    }
+
+    .signin-btn.loading::after {
+        content: '';
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid transparent;
+        border-top: 2px solid white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-left: 0.5rem;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .signin-card {
+            margin: 1rem;
+            padding: 2rem;
+        }
+
+        .social-login {
+            flex-direction: column;
+        }
+
+        .form-options {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .signin-card {
+            padding: 1.5rem;
+        }
+
+        .signin-title {
+            font-size: 1.75rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="signin-container">
+    <div class="signin-wrapper">
+        <div class="signin-card">
+            <div class="signin-header">
+                <div class="signin-badge">
+                    <i class="fas fa-shield-alt me-2"></i>Welcome Back
+                </div>
+                <h1 class="signin-title">Sign In to CheatInSights</h1>
+                <p class="signin-subtitle">Access your document analysis dashboard</p>
+            </div>
+
+            <div class="error-message" id="errorMessage">
+                Invalid username or password. Please try again.
+            </div>
+
+            <form id="signinForm">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="username" class="form-label">Username</label>
+                    <input type="text" class="form-input" id="username" name="username" placeholder="Enter your username" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <div class="password-container">
+                        <input type="password" class="form-input" id="password" name="password" placeholder="Enter your password" required>
+                        <button type="button" class="password-toggle" id="passwordToggle">
+                            <i class="fas fa-eye" id="passwordIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe" name="rememberMe">
+                        <span>Remember me</span>
+                    </label>
+                    <a href="#" class="forgot-password">Forgot password?</a>
+                </div>
+
+                <button type="submit" class="signin-btn" id="signinBtn">
+                    Sign In
+                </button>
+            </form>
+
+            <div class="divider">
+            </div>
+
+
+
+            <div class="signup-link">
+                Don't have an account?<a href="/contact">Contact us</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('signinForm');
+    const passwordToggle = document.getElementById('passwordToggle');
+    const passwordInput = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordIcon');
+    const signinBtn = document.getElementById('signinBtn');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Password toggle functionality
+    passwordToggle.addEventListener('click', function() {
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            passwordIcon.classList.remove('fa-eye');
+            passwordIcon.classList.add('fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            passwordIcon.classList.remove('fa-eye-slash');
+            passwordIcon.classList.add('fa-eye');
+        }
+    });
+
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Hide error message
+        errorMessage.style.display = 'none';
+        
+        // Remove error classes
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.classList.remove('error');
+        });
+
+        // Get form data
+        const formData = {
+            username: form.username.value.trim(),
+            password: form.password.value,
+            rememberMe: form.rememberMe.checked
+        };
+
+        // Basic validation
+        if (!formData.username || !formData.password) {
+            showError('Please fill in all required fields.');
+            return;
+        }
+
+        // Show loading state
+        signinBtn.classList.add('loading');
+        signinBtn.textContent = 'Signing In...';
+        signinBtn.disabled = true;
+
+        // Get CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        // Send form data to Django backend
+        fetch('/signin/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken,
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => {
+            if (response.redirected) {
+                // Server is redirecting us - follow the redirect
+                window.location.href = response.url;
+            } else {
+                return response.json();
+            }
+        })
+        .then(data => {
+            if (data && data.success) {
+                // Server returned success - redirect to the URL provided by server
+                window.location.href = data.redirect_url || '/dashboard/';
+            } else if (data) {
+                showError(data.message || 'Invalid username or password.');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showError('An error occurred. Please try again.');
+        })
+        .finally(() => {
+            // Reset button state
+            signinBtn.classList.remove('loading');
+            signinBtn.textContent = 'Sign In';
+            signinBtn.disabled = false;
+        });
+    });
+
+    function showError(message) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+        
+        // Add error classes to inputs
+        document.querySelectorAll('.form-input').forEach(input => {
+            input.classList.add('error');
+        });
+    }
+
+    // Real-time validation
+    document.querySelectorAll('.form-input').forEach(input => {
+        input.addEventListener('input', function() {
+            if (this.classList.contains('error')) {
+                this.classList.remove('error');
+                if (!document.querySelector('.form-input.error')) {
+                    errorMessage.style.display = 'none';
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
