@@ -6,7 +6,7 @@
 {% block content %}
 <div class="container-fluid" style="background-color: #1b1b1b; padding: 120px 0;">
     <div class="row justify-content-center">
-        <div class="col-lg-8 col-md-10">
+        <div class="col-11 col-md-8">
             <div class="bg-dark rounded-3 shadow p-5" style="border: 1px solid #3a3a3a;">
                 <h1 class="text-center mb-5" style="color: #4f46e5; font-weight: 600;">Contact CheatInSights</h1>
                 <p class="text-center text-light mb-5">Get in touch with us to learn more about our document analysis platform for academic integrity.</p>
@@ -14,37 +14,25 @@
                 <form id="contactForm">
                     <!-- Contact Information -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col">
                             <label for="firstName" class="form-label fw-bold text-light">First Name *</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="firstName" name="firstName" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="lastName" class="form-label fw-bold text-light">Last Name *</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="lastName" name="lastName" required>
                         </div>
                     </div>
 
                     <!-- Organization Information -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col">
                             <label for="organization" class="form-label fw-bold text-light">Organization/University *</label>
                             <input type="text" class="form-control bg-dark text-light border-secondary" id="organization" name="organization" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="jobTitle" class="form-label fw-bold text-light">Job Title</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="jobTitle" name="jobTitle">
                         </div>
                     </div>
 
                     <!-- Contact Details -->
                     <div class="row mb-4">
-                        <div class="col-md-6">
+                        <div class="col">
                             <label for="emailAddress" class="form-label fw-bold text-light">Email Address *</label>
                             <input type="email" class="form-control bg-dark text-light border-secondary" id="emailAddress" name="emailAddress" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="phoneNumber" class="form-label fw-bold text-light">Phone Number</label>
-                            <input type="tel" class="form-control bg-dark text-light border-secondary" id="phoneNumber" name="phoneNumber">
                         </div>
                     </div>
 
@@ -79,27 +67,6 @@
                     <div class="mb-4">
                         <label for="message" class="form-label fw-bold text-light">Message *</label>
                         <textarea class="form-control bg-dark text-light border-secondary" id="message" name="message" rows="5" placeholder="Tell us about your academic integrity needs and how CheatInSights can help..." required></textarea>
-                    </div>
-
-                    <!-- File Upload -->
-                    <div class="mb-4">
-                        <label for="fileUpload" class="form-label fw-bold text-light">Upload Documents (Optional)</label>
-                        <div class="upload-area" id="uploadArea">
-                            <div class="upload-content text-center p-5">
-                                <i class="fas fa-cloud-upload-alt mb-3" style="font-size: 3rem; color: #4f46e5;"></i>
-                                <h5 class="text-light">Drag & Drop files here</h5>
-                                <p class="text-muted">or</p>
-                                <input type="file" class="form-control" id="fileUpload" name="documents" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" style="display: none;">
-                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileUpload').click()">
-                                    Browse Files
-                                </button>
-                                <p class="text-muted mt-2">Supported formats: PDF, DOC, DOCX, JPG, PNG</p>
-                            </div>
-                            <div id="fileList" class="mt-3" style="display: none;">
-                                <h6 class="text-light">Selected Files:</h6>
-                                <ul id="selectedFiles" class="list-group list-group-flush bg-dark"></ul>
-                            </div>
-                        </div>
                     </div>
 
                     <!-- Submit Button -->

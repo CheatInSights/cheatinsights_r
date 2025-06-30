@@ -4,19 +4,629 @@
 
 {% block title %}Home - CheatInSights{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Dark Mode Design System */
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #8b5cf6;
+        --accent: #a855f7;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #0f172a;
+        --light: #1e293b;
+        --white: #ffffff;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-300: #cbd5e1;
+        --gray-400: #94a3b8;
+        --gray-500: #64748b;
+        --gray-600: #475569;
+        --gray-700: #334155;
+        --gray-800: #1e293b;
+        --gray-900: #0f172a;
+        --dark-bg: #0a0a0a;
+        --dark-surface: #111111;
+        --dark-card: #1a1a1a;
+        --dark-border: #2a2a2a;
+        --dark-text: #e5e7eb;
+        --dark-text-secondary: #9ca3af;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    }
+
+    /* Base Styles - Dark Mode */
+    body {
+        background-color: var(--dark-bg);
+        color: var(--dark-text);
+        line-height: 1.7;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Hero Section - Dark Gradient */
+    .hero-section {
+        background: linear-gradient(135deg, var(--gray-900) 0%, var(--dark-bg) 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="50" cy="50" r="1" fill="white" opacity="0.05"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        opacity: 0.5;
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .hero-badge {
+        display: inline-block;
+        background: rgba(99, 102, 241, 0.2);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+        border-radius: 50px;
+        padding: 0.5rem 1.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        margin-bottom: 1.5rem;
+        color: var(--primary);
+    }
+
+    .hero-title {
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 800;
+        line-height: 1.1;
+        margin-bottom: 1.5rem;
+        background: linear-gradient(135deg, #ffffff 0%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        color: var(--dark-text-secondary);
+        margin-bottom: 2.5rem;
+        max-width: 600px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .hero-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        display: inline-block;
+        padding: 0.625rem 2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1.4;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        color: white;
+    }
+
+    .btn-white {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .btn-white:hover {
+        background: rgba(255, 255, 255, 0.2);
+        transform: translateY(-2px);
+        color: white;
+    }
+
+    /* Moving Text Divider */
+    .moving-text-container {
+        background: var(--dark-surface);
+        padding: 1rem 0;
+        overflow: hidden;
+        border-top: 1px solid var(--dark-border);
+        border-bottom: 1px solid var(--dark-border);
+    }
+
+    .moving-text {
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        animation: scroll 30s linear infinite;
+    }
+
+    .moving-text span {
+        color: var(--dark-text-secondary);
+        font-weight: 500;
+        margin: 0 1rem;
+        font-size: 0.875rem;
+    }
+
+    @keyframes scroll {
+        0% { transform: translateX(0); }
+        100% { transform: translateX(-50%); }
+    }
+
+    /* Content Sections - Dark Mode */
+    .section {
+        padding: 6rem 0;
+        background-color: var(--dark-bg);
+    }
+
+    .section:nth-child(even) {
+        background-color: var(--dark-surface);
+    }
+
+    .section-header {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .section-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 1rem;
+    }
+
+    .section-subtitle {
+        font-size: 1.125rem;
+        color: var(--dark-text-secondary);
+        max-width: 600px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    /* Features Section - Dark Cards */
+    .features-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+    }
+
+    .feature-card {
+        background: var(--dark-card);
+        border-radius: 20px;
+        padding: 2.5rem;
+        text-align: center;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .feature-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+    }
+
+    .feature-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        background: var(--dark-surface);
+    }
+
+    .feature-icon {
+        width: 80px;
+        height: 80px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+    }
+
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 1rem;
+    }
+
+    .feature-description {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+    }
+
+    /* Comparison Section - Dark Cards */
+    .comparison-section {
+        background: var(--dark-surface);
+    }
+
+    .comparison-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+    }
+
+    .comparison-card {
+        background: var(--dark-card);
+        border-radius: 20px;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+    }
+
+    .comparison-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        background: var(--dark-surface);
+    }
+
+    .comparison-header {
+        padding: 2rem;
+        border-bottom: 1px solid var(--dark-border);
+    }
+
+    .comparison-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .comparison-title.danger {
+        color: var(--danger);
+    }
+
+    .comparison-title.success {
+        color: var(--success);
+    }
+
+    .comparison-content {
+        padding: 2rem;
+    }
+
+    .image-container {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .hover-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(239, 68, 68, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .image-container:hover .hover-overlay {
+        opacity: 1;
+    }
+
+    .overlay-text {
+        text-align: center;
+        color: white;
+    }
+
+    .overlay-text h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .detector-result {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+
+    /* Explanation Section - Dark Cards */
+    .explanation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+        gap: 2rem;
+    }
+
+    .explanation-card {
+        background: var(--dark-card);
+        border-radius: 20px;
+        padding: 2.5rem;
+        box-shadow: var(--shadow-md);
+        border: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .explanation-card::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 50%;
+        transform: translate(50%, -50%);
+        opacity: 0.1;
+    }
+
+    .explanation-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+        background: var(--dark-surface);
+    }
+
+    .explanation-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        color: white;
+        margin-bottom: 1.5rem;
+    }
+
+    .explanation-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 1rem;
+    }
+
+    .explanation-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .explanation-list li {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+        margin-bottom: 0.75rem;
+        padding-left: 1.5rem;
+        position: relative;
+    }
+
+    .explanation-list li::before {
+        content: '•';
+        color: var(--primary);
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+    }
+
+    /* Graphs Section - Dark Theme */
+    .graphs-section {
+        background: linear-gradient(135deg, var(--gray-900), var(--dark-bg));
+        color: white;
+    }
+
+    .rotating-words-container {
+        text-align: center;
+        margin-bottom: 4rem;
+    }
+
+    .rotating-words {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .word-left, .word-right {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .separator {
+        color: var(--dark-text-secondary);
+    }
+
+    .rotating-subtitle {
+        font-size: 1.125rem;
+        color: var(--dark-text-secondary);
+    }
+
+    .graphs-grid {
+        display: grid;
+        /* grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); */
+        gap: 2rem;
+    }
+
+    .graph-card {
+        background: rgba(99, 102, 241, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(99, 102, 241, 0.2);
+        border-radius: 20px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .graph-card:hover {
+        transform: translateY(-8px);
+        background: rgba(99, 102, 241, 0.15);
+    }
+
+    .graph-placeholder {
+        margin-bottom: 1.5rem;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .graph-title {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: var(--dark-text);
+        margin-bottom: 0.75rem;
+    }
+
+    .graph-description {
+        color: var(--dark-text-secondary);
+        line-height: 1.6;
+    }
+
+    /* CTA Section - Dark Theme */
+    .cta-section {
+        background: linear-gradient(135deg, var(--gray-900), var(--dark-bg));
+        color: white;
+        text-align: center;
+    }
+
+    .cta-content {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .cta-title {
+        font-size: clamp(2rem, 4vw, 3rem);
+        font-weight: 700;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, #ffffff 0%, var(--primary) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .cta-subtitle {
+        font-size: 1.125rem;
+        color: var(--dark-text-secondary);
+        margin-bottom: 2rem;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-section {
+            min-height: 80vh;
+            padding: 4rem 0;
+        }
+
+        .hero-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .section {
+            padding: 4rem 0;
+        }
+
+        /* .features-grid,
+        .comparison-grid,
+        .explanation-grid, */
+        /* .graphs-grid {
+            grid-template-columns: 1fr;
+        } */
+
+        .rotating-words {
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .feature-card,
+        .comparison-card,
+        .explanation-card,
+        .graph-card {
+            padding: 1.5rem;
+        }
+
+        .hero-buttons .btn {
+            width: 100%;
+            max-width: 300px;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-
-
-
-
 <!-- Hero Section -->
-<section class="hero">
-    <div class="hero-container">
-        <h1>Document Integrity Analysis Made Simple</h1>
-        <p>Uncover hidden changes and track document revisions with our advanced analysis tools. Get instant insights into document modifications and maintain version control effortlessly.</p>
-        <div class="hero-buttons">
-            <a href="/dashboard" class="btn btn-white btn-large">Start Free Trial</a>
-            <a href="#" class="btn btn-primary btn-large">Watch Demo</a>
+<section class="hero-section">
+    <div class="container">
+        <div class="hero-content">
+            <div class="hero-badge">
+                <i class="fas fa-shield-alt me-2"></i>Document Integrity Analysis Made Simple
+            </div>
+            <h1 class="hero-title">Uncover Hidden Changes</h1>
+            <p class="hero-subtitle">
+                Uncover hidden changes and track document revisions with our advanced analysis tools. 
+                Get instant insights into document modifications and maintain version control effortlessly.
+            </p>
+            <div class="hero-buttons">
+                <a href="/dashboard" class="btn btn-white">Start Free Trial</a>
+                <a href="#" class="btn btn-primary">Watch Demo</a>
+            </div>
         </div>
     </div>
 </section>
@@ -47,131 +657,132 @@
         <span>Content Verification</span>
         <span>•</span>
         <span>Document Integrity</span>
-        <span>•</span>
-        <span>Document Analysis</span>
-        <span>•</span>
-        <span>Version Control</span>
-        <span>•</span>
-        <span>Change Tracking</span>
-        <span>•</span>
-        <span>Revision History</span>
-        <span>•</span>
-        <span>Content Verification</span>
-        <span>•</span>
-        <span>Document Integrity</span>
-        <span>•</span>
-        <span>Document Analysis</span>
-        <span>•</span>
-        <span>Version Control</span>
-        <span>•</span>
-        <span>Change Tracking</span>
-        <span>•</span>
-        <span>Revision History</span>
-        <span>•</span>
-        <span>Content Verification</span>
-        <span>•</span>
-        <span>Document Integrity</span>
     </div>
 </div>
 
 <!-- Features Section -->
-<section class="features" id="features">
-    <div class="features-container">
-        <div class="section-title">
-            <h2>Why Choose CheatInSights?</h2>
-            <p>Worlds first intrinsic document for visualisation & analysis</p>
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Why Choose CheatInSights?</div>
+            <h2 class="section-title">World's First Intrinsic Document Analysis</h2>
+            <p class="section-subtitle">
+                Advanced document intelligence for visualisation & analysis that goes beyond traditional methods
+            </p>
         </div>
-
+        
         <div class="features-grid">
             <div class="feature-card">
-                <div class="feature-icon">🔒</div>
-                <h3>Privacy-First Architecture</h3>
-                <p>All document data is stored temporarily and deleted when you close the application. The system doesn't track any information about your documents, ensuring complete privacy.</p>
+                <div class="feature-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3 class="feature-title">Privacy-First Architecture</h3>
+                <p class="feature-description">
+                    All document data is stored temporarily and deleted when you close the application. 
+                    The system doesn't track any information about your documents, ensuring complete privacy.
+                </p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">⚡</div>
-                <h3>Lightning Fast Analysis</h3>
-                <p>Identify editing patterns and outliers quickly with simultaneous document processing and visual tools, all without complex setup or delays.</p>
+                <div class="feature-icon">
+                    <i class="fas fa-bolt"></i>
+                </div>
+                <h3 class="feature-title">Lightning Fast Analysis</h3>
+                <p class="feature-description">
+                    Identify editing patterns and outliers quickly with simultaneous document processing 
+                    and visual tools, all without complex setup or delays.
+                </p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">🎓</div>
-                <h3>Academic Integrity Focus</h3>
-                <p>Designed for schools to uphold standards, it detects collaboration, spots plagiarism, and ensures fair assessments with accuracy.</p>
+                <div class="feature-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h3 class="feature-title">Academic Integrity Focus</h3>
+                <p class="feature-description">
+                    Designed for schools to uphold standards, it detects collaboration, spots plagiarism, 
+                    and ensures fair assessments with accuracy.
+                </p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">📊</div>
-                <h3>Visual Document Intelligence</h3>
-                <p>Transform document analysis into visual insights using color-coded highlights and charts to quickly spot and address issues.</p>
+                <div class="feature-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <h3 class="feature-title">Visual Document Intelligence</h3>
+                <p class="feature-description">
+                    Transform document analysis into visual insights using color-coded highlights and charts 
+                    to quickly spot and address issues.
+                </p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">🔧</div>
-                <h3>Zero Learning Curve</h3>
-                <p>With an intuitive interface, faculty can start analyzing documents immediately with drag-and-drop simplicity, requiring no IT support.</p>
+                <div class="feature-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <h3 class="feature-title">Zero Learning Curve</h3>
+                <p class="feature-description">
+                    With an intuitive interface, faculty can start analyzing documents immediately with 
+                    drag-and-drop simplicity, requiring no IT support.
+                </p>
             </div>
 
             <div class="feature-card">
-                <div class="feature-icon">🏛️</div>
-                <h3>Secure Local Processing</h3>
-                <p>Built for higher education with secure local processing and comprehensive document analysis, designed to maintain academic integrity standards.</p>
+                <div class="feature-icon">
+                    <i class="fas fa-university"></i>
+                </div>
+                <h3 class="feature-title">Secure Local Processing</h3>
+                <p class="feature-description">
+                    Built for higher education with secure local processing and comprehensive document analysis, 
+                    designed to maintain academic integrity standards.
+                </p>
             </div>
         </div>
     </div>
-    
-    <!-- Featured Feature Section -->
-    
 </section>
 
 <!-- Comparison Section -->
-<section class="comparison-section py-5" >
-    <div class="container" >
-        <div class="row">
-            <div class="col-12 text-center mb-5">
-                <h2 class="display-5 fw-bold text-dark">The Difference is Clear.</h2>
-                <p class="lead text-muted">See how CheatInSights provides deeper insights than traditional AI detectors</p>
-            </div>
+<section class="section comparison-section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">The Difference is Clear</div>
+            <h2 class="section-title">See How CheatInSights Provides Deeper Insights</h2>
+            <p class="section-subtitle">
+                Traditional AI detectors vs our advanced intrinsic analysis approach
+            </p>
         </div>
         
-        <div class="row g-4">
-            <!-- AI Detectors Column -->
-            <div class="col-lg-6">
-                <div class="comparison-card h-100">
-                    <div class="comparison-header">
-                        <h3 class="comparison-title text-danger">
-                            <i class="fas fa-robot me-2"></i>
-                            What You See with AI Detectors
-                        </h3>
-                    </div>
-                    <div class="comparison-content">
-                        <div class="image-container">
-                            <img src="{% static 'them.png' %}" alt="AI Detectors Example" class="img-fluid w-100">
-                            <div class="hover-overlay">
-                                <div class="overlay-text">
-                                    <h2>100% AI Generated</h2>
-                                    <p style="color: white">Humanised to fool detectors</p>
-                                    <p class="detector-result">Detectors say: 0% AI</p>
-                                </div>
+        <div class="comparison-grid">
+            <div class="comparison-card">
+                <div class="comparison-header">
+                    <h3 class="comparison-title danger">
+                        <i class="fas fa-robot"></i>
+                        What You See with AI Detectors
+                    </h3>
+                </div>
+                <div class="comparison-content">
+                    <div class="image-container">
+                        <img src="{% static 'them.png' %}" alt="AI Detectors Example" class="img-fluid w-100">
+                        <div class="hover-overlay">
+                            <div class="overlay-text">
+                                <h2>100% AI Generated</h2>
+                                <p style="color: white;">Humanised to fool detectors</p>
+                                <p class="detector-result">Detectors say: 0% AI</p>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- CheatInSights Column -->
-            <div class="col-lg-6">
-                <div class="comparison-card h-100">
-                    <div class="comparison-header">
-                        <h3 class="comparison-title text-success">
-                            <i class="fas fa-chart-line me-2"></i>
-                            What You Could See with CheatInSights
-                        </h3>
-                    </div>
-                    <div class="comparison-content">
-                        <img src="{% static 'us.png' %}" alt="CheatInSights Example" class="img-fluid w-100">
-                    </div>
+            <div class="comparison-card">
+                <div class="comparison-header">
+                    <h3 class="comparison-title success">
+                        <i class="fas fa-chart-line"></i>
+                        What You Could See with CheatInSights
+                    </h3>
+                </div>
+                <div class="comparison-content">
+                    <img src="{% static 'us.png' %}" alt="CheatInSights Example" class="img-fluid w-100">
                 </div>
             </div>
         </div>
@@ -179,17 +790,22 @@
 </section>
 
 <!-- Explanation Section -->
-<section class="explanation-section" id="explanation">
-    <div class="explanation-container">
-        <div class="section-title">
-            <h2>Why CheatInSights is Different</h2>
-            <p>Understanding the fundamental differences in our approach</p>
+<section class="section">
+    <div class="container">
+        <div class="section-header">
+            <div class="section-badge">Why CheatInSights is Different</div>
+            <h2 class="section-title">Understanding the Fundamental Differences</h2>
+            <p class="section-subtitle">
+                Our approach goes beyond traditional methods to provide deeper, more accurate insights
+            </p>
         </div>
 
         <div class="explanation-grid">
             <div class="explanation-card">
-                <div class="explanation-icon">🤖</div>
-                <h3>Traditional AI Detectors</h3>
+                <div class="explanation-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3 class="explanation-title">Traditional AI Detectors</h3>
                 <ul class="explanation-list">
                     <li><strong>Extrinsic Analysis:</strong> They see the same information as you do - just the final text content.</li>
                     <li><strong>Rough Estimates:</strong> Provide a percentage indicating how likely content is AI-generated.</li>
@@ -198,8 +814,10 @@
             </div>
 
             <div class="explanation-card">
-                <div class="explanation-icon">🧠</div>
-                <h3>CheatInSights Approach</h3>
+                <div class="explanation-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h3 class="explanation-title">CheatInSights Approach</h3>
                 <ul class="explanation-list">
                     <li><strong>Intrinsic Analysis:</strong> Visualizes the underlying writing behavior patterns embedded in documents.</li>
                     <li><strong>Visual Detection:</strong> Original vs AI-assisted writing behaviors are visibly different and easily spotted.</li>
@@ -211,8 +829,8 @@
 </section>
 
 <!-- Graphs Section -->
-<section class="graphs-section" id="graphs">
-    <div class="graphs-container">
+<section class="section graphs-section">
+    <div class="container">
         <div class="rotating-words-container">
             <div class="rotating-words">
                 <span class="word-left" id="wordLeft">Intelligent</span>
@@ -224,58 +842,51 @@
             </div>
         </div>
 
-        <div class="graphs-content">
-            <!-- Graph Grid -->
-            <div class="graphs-grid">
-                <div class="graph-card">
-                    <div class="graph-placeholder">
-                        <img src="{% static 'graph4.png' %}" alt="Outlier Detection Graph" class="img-fluid">
-                    </div>
-                    <h4>Plot for cohort submissions</h4>
-                    <p>Advanced algorithms identify unusual editing patterns and potential integrity issues</p>
+        <div class="graphs-grid">
+            <div class="graph-card">
+                <div class="graph-placeholder">
+                    <img src="{% static 'graph4.png' %}" alt="Outlier Detection Graph" class="img-fluid">
                 </div>
-
-                <div class="graph-card">
-                    <div class="graph-placeholder">
-                        <img src="{% static 'graph1.png' %}" alt="Document Analysis Graph" class="img-fluid">
-                    </div>
-                    <h4>Customisable Graphs</h4>
-                    <p>Choose from multiple metrics to create tailored visualizations for your specific analysis needs</p>
-                </div>
-                
-                <div class="graph-card">
-                    <div class="graph-placeholder">
-                        <img src="{% static 'graph2.png' %}" alt="Collaboration Analysis Graph" class="img-fluid">
-                    </div>
-                    <h4>Instantly identify outliers</h4>
-                    <p>Automatically detect and highlight documents that deviate from normal patterns in your dataset</p>
-                </div>
-                
-                <div class="graph-card">
-                    <div class="graph-placeholder">
-                        <img src="{% static 'graph3.png' %}" alt="Timeline Analysis Graph" class="img-fluid">
-                    </div>
-                    <h4>Plot against many metrics</h4>
-                    <p>Compare documents across multiple dimensions including RSID frequency, collaboration scores, and more</p>
-                </div>
-                
-            
+                <h4 class="graph-title">Plot for cohort submissions</h4>
+                <p class="graph-description">Advanced algorithms identify unusual editing patterns and potential integrity issues</p>
             </div>
 
-            <!-- Rotating Words -->
+            <div class="graph-card">
+                <div class="graph-placeholder">
+                    <img src="{% static 'graph1.png' %}" alt="Document Analysis Graph" class="img-fluid">
+                </div>
+                <h4 class="graph-title">Customisable Graphs</h4>
+                <p class="graph-description">Choose from multiple metrics to create tailored visualizations for your specific analysis needs</p>
+            </div>
             
+            <div class="graph-card">
+                <div class="graph-placeholder">
+                    <img src="{% static 'graph2.png' %}" alt="Collaboration Analysis Graph" class="img-fluid">
+                </div>
+                <h4 class="graph-title">Instantly identify outliers</h4>
+                <p class="graph-description">Automatically detect and highlight documents that deviate from normal patterns in your dataset</p>
+            </div>
+            
+            <div class="graph-card">
+                <div class="graph-placeholder">
+                    <img src="{% static 'graph3.png' %}" alt="Timeline Analysis Graph" class="img-fluid">
+                </div>
+                <h4 class="graph-title">Plot against many metrics</h4>
+                <p class="graph-description">Compare documents across multiple dimensions including RSID frequency, collaboration scores, and more</p>
+            </div>
         </div>
     </div>
 </section>
 
 <!-- CTA Section -->
-<section class="cta">
-    <div class="cta-container">
-        <h2>Are you keeping up with the rise of AI?</h2>
-        <p>Reach out to us to learn more!</p>
-        <div class="hero-buttons">
-
-            <a href="#" class="btn btn-primary btn-large">Contact Us</a>
+<section class="section cta-section">
+    <div class="container">
+        <div class="cta-content">
+            <h2 class="cta-title">Are you keeping up with the rise of AI?</h2>
+            <p class="cta-subtitle">Reach out to us to learn more about how CheatInSights can protect your academic integrity</p>
+            <div class="hero-buttons">
+                <a href="/contact" class="btn btn-primary">Contact Us</a>
+            </div>
         </div>
     </div>
 </section>
