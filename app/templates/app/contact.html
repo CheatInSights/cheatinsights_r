@@ -3,45 +3,219 @@
 
 {% block title %}Contact Us - CheatInSights{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Dark Mode Design System from company.html */
+    :root {
+        --primary: #6366f1;
+        --primary-dark: #4f46e5;
+        --secondary: #8b5cf6;
+        --accent: #a855f7;
+        --success: #10b981;
+        --warning: #f59e0b;
+        --danger: #ef4444;
+        --dark: #0f172a;
+        --light: #1e293b;
+        --white: #ffffff;
+        --gray-50: #f8fafc;
+        --gray-100: #f1f5f9;
+        --gray-200: #e2e8f0;
+        --gray-300: #cbd5e1;
+        --gray-400: #94a3b8;
+        --gray-500: #64748b;
+        --gray-600: #475569;
+        --gray-700: #334155;
+        --gray-800: #1e293b;
+        --gray-900: #0f172a;
+        --dark-bg: #0a0a0a;
+        --dark-surface: #111111;
+        --dark-card: #1a1a1a;
+        --dark-border: #2a2a2a;
+        --dark-text: #e5e7eb;
+        --dark-text-secondary: #9ca3af;
+        --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+        --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+        --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+        --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+        --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+    }
+
+    body {
+        background-color: var(--dark-bg);
+        color: var(--dark-text);
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    .contact-container {
+        background-color: var(--dark-bg);
+        padding: 6rem 0;
+    }
+
+    .contact-wrapper {
+        display: grid;
+        grid-template-columns: 1fr 1.2fr;
+        gap: 0;
+        background: var(--dark-card);
+        border-radius: 20px;
+        overflow: hidden;
+        border: 1px solid var(--dark-border);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .contact-info-section {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        padding: 3rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .info-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+
+    .info-subtitle {
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.85);
+        line-height: 1.7;
+        margin-bottom: 2rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        color: rgba(255, 255, 255, 0.85);
+    }
+
+    .info-item i {
+        font-size: 1.25rem;
+        width: 40px;
+        text-align: center;
+        margin-right: 1rem;
+    }
+    .info-item a {
+        color: white;
+        text-decoration: none;
+        transition: color 0.3s;
+    }
+    .info-item a:hover {
+        color: var(--dark-text);
+    }
+
+    .contact-form-section {
+        padding: 3rem;
+    }
+
+    .form-title {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--dark-text);
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--dark-text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .form-control, .form-select {
+        background-color: var(--dark-surface) !important;
+        border: 1px solid var(--dark-border) !important;
+        color: var(--dark-text) !important;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    .form-control::placeholder {
+        color: var(--gray-500) !important;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary) !important;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2) !important;
+        background-color: var(--dark-surface) !important;
+        color: var(--dark-text) !important;
+    }
+
+    .submit-btn {
+        background: linear-gradient(135deg, var(--primary), var(--secondary));
+        color: white;
+        border: none;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+    
+    .submit-btn:disabled {
+        opacity: 0.7;
+    }
+
+    @media (max-width: 992px) {
+        .contact-wrapper {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="container-fluid" style="background-color: #1b1b1b; padding: 120px 0;">
-    <div class="row justify-content-center">
-        <div class="col-11 col-md-8">
-            <div class="bg-dark rounded-3 shadow p-5" style="border: 1px solid #3a3a3a;">
-                <h1 class="text-center mb-5" style="color: #4f46e5; font-weight: 600;">Contact CheatInSights</h1>
-                <p class="text-center text-light mb-5">Get in touch with us to learn more about our document analysis platform for academic integrity.</p>
-                
+<div class="contact-container">
+    <div class="container">
+        <div class="contact-wrapper">
+            <div class="contact-info-section">
+                <h2 class="info-title">Let's Connect</h2>
+                <p class="info-subtitle">
+                    We're excited to hear from you. Whether you have a question about our platform, need a demo, or want to discuss partnership opportunities, we're ready to help.
+                </p>
+                <div class="info-item">
+                    <i class="fas fa-envelope"></i>
+                    <span><a href="mailto:contact@cheatinsights.com">contact@cheatinsights.com</a></span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>Perth, Western Australia</span>
+                </div>
+            </div>
+            <div class="contact-form-section">
+                <h2 class="form-title">Send a Message</h2>
                 <form id="contactForm">
-                    <!-- Contact Information -->
-                    <div class="row mb-4">
-                        <div class="col">
-                            <label for="firstName" class="form-label fw-bold text-light">First Name *</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="firstName" name="firstName" required>
-                        </div>
-                    </div>
-
-                    <!-- Organization Information -->
-                    <div class="row mb-4">
-                        <div class="col">
-                            <label for="organization" class="form-label fw-bold text-light">Organization/University *</label>
-                            <input type="text" class="form-control bg-dark text-light border-secondary" id="organization" name="organization" required>
-                        </div>
-                    </div>
-
-                    <!-- Contact Details -->
-                    <div class="row mb-4">
-                        <div class="col">
-                            <label for="emailAddress" class="form-label fw-bold text-light">Email Address *</label>
-                            <input type="email" class="form-control bg-dark text-light border-secondary" id="emailAddress" name="emailAddress" required>
-                        </div>
-                    </div>
-
-                    <!-- Inquiry Type and Details -->
-                    <div class="row mb-4">
+                    {% csrf_token %}
+                    <div class="row mb-3">
                         <div class="col-md-6">
-                            <label for="inquiryType" class="form-label fw-bold text-light">Inquiry Type *</label>
-                            <select class="form-select bg-dark text-light border-secondary" id="inquiryType" name="inquiryType" required>
-                                <option value="">Select inquiry type...</option>
+                            <label for="firstName" class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="firstName" name="firstName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="lastName" class="form-label">Last Name *</label>
+                            <input type="text" class="form-control" id="lastName" name="lastName" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="organization" class="form-label">Organization/University *</label>
+                        <input type="text" class="form-control" id="organization" name="organization" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="emailAddress" class="form-label">Email Address *</label>
+                        <input type="email" class="form-control" id="emailAddress" name="emailAddress" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="inquiryType" class="form-label">Inquiry Type *</label>
+                            <select class="form-select" id="inquiryType" name="inquiryType" required>
+                                <option value="" selected>Select inquiry type...</option>
                                 <option value="demo">Request Demo</option>
                                 <option value="pricing">Pricing Information</option>
                                 <option value="integration">Integration Support</option>
@@ -51,9 +225,9 @@
                             </select>
                         </div>
                         <div class="col-md-6">
-                            <label for="studentCount" class="form-label fw-bold text-light">Approximate Student Count</label>
-                            <select class="form-select bg-dark text-light border-secondary" id="studentCount" name="studentCount">
-                                <option value="">Select range...</option>
+                            <label for="studentCount" class="form-label">Approximate Student Count</label>
+                            <select class="form-select" id="studentCount" name="studentCount">
+                                <option value="" selected>Select range...</option>
                                 <option value="1-1000">1-1,000 students</option>
                                 <option value="1001-5000">1,001-5,000 students</option>
                                 <option value="5001-10000">5,001-10,000 students</option>
@@ -62,17 +236,12 @@
                             </select>
                         </div>
                     </div>
-
-                    <!-- Message -->
                     <div class="mb-4">
-                        <label for="message" class="form-label fw-bold text-light">Message *</label>
-                        <textarea class="form-control bg-dark text-light border-secondary" id="message" name="message" rows="5" placeholder="Tell us about your academic integrity needs and how CheatInSights can help..." required></textarea>
+                        <label for="message" class="form-label">Message *</label>
+                        <textarea class="form-control" id="message" name="message" rows="5" placeholder="Tell us about your academic integrity needs..." required></textarea>
                     </div>
-
-                    <!-- Submit Button -->
                     <div class="text-center">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-primary btn-lg px-5 py-3" style="background-color: #4f46e5; border-color: #4f46e5;">
+                        <button type="submit" class="btn submit-btn">
                             Send Message
                         </button>
                     </div>
@@ -81,111 +250,16 @@
         </div>
     </div>
 </div>
+{% endblock %}
 
-<style>
-.upload-area {
-    border: 2px dashed #4f46e5;
-    border-radius: 10px;
-    background-color: #2a2a2a;
-    transition: all 0.3s ease;
-}
-
-.upload-area.dragover {
-    background-color: #3a3a3a;
-    border-color: #6f42c1;
-    transform: scale(1.02);
-}
-
-.upload-content {
-    min-height: 200px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-.form-control:focus, .form-select:focus {
-    border-color: #4f46e5;
-    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
-    background-color: #2a2a2a !important;
-    color: #fff !important;
-}
-
-.form-control, .form-select {
-    background-color: #2a2a2a !important;
-    border-color: #3a3a3a !important;
-    color: #fff !important;
-}
-
-.form-control::placeholder {
-    color: #6c757d !important;
-}
-
-.btn-primary:hover {
-    background-color: #4338ca !important;
-    border-color: #4338ca !important;
-}
-
-.list-group-item {
-    background-color: #2a2a2a !important;
-    border-color: #3a3a3a !important;
-    color: #fff !important;
-}
-</style>
-
+{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const uploadArea = document.getElementById('uploadArea');
-    const fileInput = document.getElementById('fileUpload');
-    const fileList = document.getElementById('fileList');
-    const selectedFiles = document.getElementById('selectedFiles');
     const form = document.getElementById('contactForm');
 
-    // Drag and drop functionality
-    uploadArea.addEventListener('dragover', function(e) {
-        e.preventDefault();
-        uploadArea.classList.add('dragover');
-    });
-
-    uploadArea.addEventListener('dragleave', function(e) {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-    });
-
-    uploadArea.addEventListener('drop', function(e) {
-        e.preventDefault();
-        uploadArea.classList.remove('dragover');
-        const files = e.dataTransfer.files;
-        handleFiles(files);
-    });
-
-    // File input change
-    fileInput.addEventListener('change', function(e) {
-        handleFiles(e.target.files);
-    });
-
-    function handleFiles(files) {
-        if (files.length > 0) {
-            fileList.style.display = 'block';
-            selectedFiles.innerHTML = '';
-            
-            Array.from(files).forEach(file => {
-                const li = document.createElement('li');
-                li.className = 'list-group-item d-flex justify-content-between align-items-center';
-                li.innerHTML = `
-                    <span>${file.name}</span>
-                    <span class="badge bg-primary rounded-pill">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
-                `;
-                selectedFiles.appendChild(li);
-            });
-        }
-    }
-
-    // Form submission
     form.addEventListener('submit', function(e) {
         e.preventDefault();
         
-        // Basic validation
         const requiredFields = form.querySelectorAll('[required]');
         let isValid = true;
         
@@ -199,29 +273,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (isValid) {
-            // Show loading state
             const submitBtn = form.querySelector('button[type="submit"]');
             const originalText = submitBtn.innerHTML;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
             submitBtn.disabled = true;
 
-            // Prepare form data
             const formData = {
                 firstName: form.firstName.value,
                 lastName: form.lastName.value,
                 organization: form.organization.value,
-                jobTitle: form.jobTitle.value,
                 emailAddress: form.emailAddress.value,
-                phoneNumber: form.phoneNumber.value,
                 inquiryType: form.inquiryType.value,
                 studentCount: form.studentCount.value,
                 message: form.message.value
             };
 
-            // Get CSRF token
             const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-            // Send form data to Django backend
             fetch('/contact/submit/', {
                 method: 'POST',
                 headers: {
@@ -233,25 +301,20 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert(data.message);
+                    alert('Success: ' + data.message);
                     form.reset();
-                    fileList.style.display = 'none';
-                    selectedFiles.innerHTML = '';
                 } else {
-                    alert(data.message);
+                    alert('Error: ' + data.message);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Sorry, there was an error sending your message. Please try again or contact us directly.');
+                alert('An error occurred. Please try again.');
             })
             .finally(() => {
-                // Reset button state
                 submitBtn.innerHTML = originalText;
                 submitBtn.disabled = false;
             });
-        } else {
-            alert('Please fill in all required fields.');
         }
     });
 });
