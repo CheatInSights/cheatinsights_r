@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const documentTabs = document.getElementById('documentTabs');
     const graphContainer = document.getElementById('graphContainer');
     const tableSearch = document.getElementById('tableSearch');
+    const riskFilterCheckbox = document.getElementById('riskFilterCheckbox');
 
 
     let selectedFiles = [];
@@ -26,8 +27,35 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize search functionality
     if (tableSearch) {
-        tableSearch.addEventListener('input', filterTable);
+        tableSearch.addEventListener('input', applyFilters);
     }
+
+    // Initialize new filter functionality
+    if (riskFilterCheckbox) {
+        riskFilterCheckbox.addEventListener('change', applyFilters);
+    }
+
+    // Initialize sort functionality
+    document.querySelectorAll('.files-table th[data-sort]').forEach(header => {
+        header.addEventListener('click', () => {
+            const table = header.closest('table');
+            const tbody = table.querySelector('tbody');
+            // Use header.cellIndex for a reliable column index
+            const columnIndex = header.cellIndex;
+            const sortType = header.getAttribute('data-sort');
+            // Check for ascending, but default to ascending if no class is set
+            const isAsc = header.classList.contains('sorted-asc');
+            
+            sortTable(tbody, columnIndex, sortType, !isAsc);
+
+            // Update header styles to show current sort state
+            table.querySelectorAll('th[data-sort]').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+            });
+            header.classList.toggle('sorted-asc', !isAsc);
+            header.classList.toggle('sorted-desc', isAsc);
+        });
+    });
 
     // Prevent default drag behaviors
     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
@@ -47,13 +75,38 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle dropped files
     dropZone.addEventListener('drop', handleDrop, false);
 
-    function filterTable() {
+    function applyFilters() {
         const searchTerm = tableSearch.value.toLowerCase();
+        const riskFilterActive = riskFilterCheckbox.checked;
         const tableRows = document.querySelectorAll('#documentTabs tr');
         
         tableRows.forEach(row => {
+            let showRow = true;
+    
+            // Condition 1: Search Filter
             const text = row.textContent.toLowerCase();
-            if (text.includes(searchTerm)) {
+            if (!text.includes(searchTerm)) {
+                showRow = false;
+            }
+    
+            // Condition 2: High-Risk Filter
+            if (riskFilterActive) {
+                // Find the suspicion score cell, which has a specific class
+                const scoreCell = row.querySelector('.file-suspicion-score');
+                if (scoreCell) {
+                    // Remove the '%' and convert to a number
+                    const score = parseFloat(scoreCell.textContent) || 0;
+                    if (score <= 50) {
+                        showRow = false;
+                    }
+                } else {
+                    // If there's no score cell for some reason, hide it when filter is active
+                    showRow = false;
+                }
+            }
+    
+            // Apply final visibility
+            if (showRow) {
                 row.classList.remove('hidden');
             } else {
                 row.classList.add('hidden');
@@ -1264,7 +1317,42 @@ document.addEventListener('DOMContentLoaded', function() {
         createGraphs();
     }
 
+    function sortTable(tbody, columnIndex, type, asc = true) {
+        const rows = Array.from(tbody.querySelectorAll('tr'));
+        const direction = asc ? 1 : -1;
 
+        const sortedRows = rows.sort((a, b) => {
+            let valA = a.children[columnIndex].textContent.trim();
+            let valB = b.children[columnIndex].textContent.trim();
 
-    
+            switch (type) {
+                case 'number':
+                    valA = parseFloat(valA) || 0;
+                    valB = parseFloat(valB) || 0;
+                    break;
+                case 'date':
+                    // Handle 'Unknown' dates by pushing them to the bottom
+                    if (valA === 'Unknown') return 1;
+                    if (valB === 'Unknown') return -1;
+                    valA = new Date(valA);
+                    valB = new Date(valB);
+                    break;
+                case 'string':
+                default:
+                    // Use localeCompare for better string sorting
+                    return valA.localeCompare(valB) * direction;
+            }
+
+            if (valA < valB) {
+                return -1 * direction;
+            }
+            if (valA > valB) {
+                return 1 * direction;
+            }
+            return 0;
+        });
+
+        // Re-append rows in the new sorted order
+        tbody.append(...sortedRows);
+    }
 });

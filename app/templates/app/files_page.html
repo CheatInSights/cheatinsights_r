@@ -2,20 +2,26 @@
     <div class="files-container">
         <div class="files-header">
             <h3 class="mb-3">Document Files</h3>
-            <div class="search-filter-container">
+            <div class="search-filter-container d-flex align-items-center gap-3">
                 <input type="text" id="tableSearch" class="form-control" placeholder="Search files..." />
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="riskFilterCheckbox">
+                    <label class="form-check-label" for="riskFilterCheckbox">
+                        High-Risk Only (>50%)
+                    </label>
+                </div>
             </div>
         </div>
         <div class="files-table-container">
             <table class="table table-hover files-table" >
                 <thead class="table-light">
                     <tr>
-                        <th>Filename</th>
-                        <th>Creator</th>
-                        <th>Last Modified By</th>
-                        <th>Created On</th>
-                        <th>Last Modified</th>
-                        <th>Suspicion Score</th>
+                        <th data-sort="string">Filename</th>
+                        <th data-sort="string">Creator</th>
+                        <th data-sort="string">Last Modified By</th>
+                        <th data-sort="date">Created On</th>
+                        <th data-sort="date">Last Modified</th>
+                        <th data-sort="number">Suspicion Score</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -50,5 +56,29 @@
 
 .files-table tr.hidden {
     display: none;
+}
+
+.files-table th[data-sort] {
+    cursor: pointer;
+    position: relative;
+    user-select: none; /* Prevents text selection on repeated clicks */
+}
+
+.files-table th[data-sort]::after {
+    content: '↕'; /* Up-down arrow */
+    font-size: 0.9em;
+    opacity: 0.4;
+    position: absolute;
+    right: 8px;
+}
+
+.files-table th[data-sort].sorted-asc::after {
+    content: '▲'; /* Up arrow */
+    opacity: 1;
+}
+
+.files-table th[data-sort].sorted-desc::after {
+    content: '▼'; /* Down arrow */
+    opacity: 1;
 }
 </style>
