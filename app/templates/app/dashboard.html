@@ -720,8 +720,8 @@
       }
 
       signoutButton.addEventListener('click', function () {
-        // not actual sign out. place hodler for now
-        window.location.href = '/';
+        // Redirect to signout URL which will handle logout and session cleanup
+        window.location.href = '/signout/';
       })
 
       uploadButton.addEventListener('click', function () {
