@@ -27,7 +27,7 @@ def dashboard_page(request):
     print(f"DEBUG: User authenticated: {request.user.is_authenticated}")
     print(f"DEBUG: User: {request.user}")
     print(f"DEBUG: Session ID: {request.session.session_key}")
-    return render(request, 'app/dashboard.html')
+    return render(request, 'app/dashboard/dashboard.html')
 
 
 @csrf_exempt
