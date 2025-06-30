@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const graphContainer = document.getElementById('graphContainer');
     const tableSearch = document.getElementById('tableSearch');
     const riskFilterCheckbox = document.getElementById('riskFilterCheckbox');
+    const fileCountSummary = document.getElementById('file-count-summary');
 
 
     let selectedFiles = [];
@@ -75,6 +76,25 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle dropped files
     dropZone.addEventListener('drop', handleDrop, false);
 
+    function updateFileCountSummary() {
+        if (!fileCountSummary) return;
+    
+        const totalRows = document.querySelectorAll('#documentTabs tr').length;
+        // Count only visible rows (those without the 'hidden' class)
+        const visibleRows = document.querySelectorAll('#documentTabs tr:not(.hidden)').length;
+        
+        if (totalRows === 0) {
+            fileCountSummary.textContent = '';
+            return;
+        }
+    
+        if (visibleRows === totalRows) {
+            fileCountSummary.textContent = `Showing all ${totalRows} files`;
+        } else {
+            fileCountSummary.textContent = `Showing ${visibleRows} of ${totalRows} files.`;
+        }
+    }
+
     function applyFilters() {
         const searchTerm = tableSearch.value.toLowerCase();
         const riskFilterActive = riskFilterCheckbox.checked;
@@ -112,6 +132,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 row.classList.add('hidden');
             }
         });
+        updateFileCountSummary();
     }
 
     function preventDefaults(e) {
@@ -273,6 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             documentTabs.appendChild(row);
         });
+        updateFileCountSummary();
     }
 
     window.selectDocument = function(fileName) {
