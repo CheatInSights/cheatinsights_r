@@ -52,7 +52,7 @@
     /* Hero Section - Dark Gradient */
     .hero-section {
         background: linear-gradient(135deg, var(--gray-900) 0%, var(--dark-bg) 100%);
-        min-height: 100vh;
+        min-height: 95vh;
         display: flex;
         align-items: center;
         position: relative;
@@ -160,10 +160,11 @@
     /* Moving Text Divider */
     .moving-text-container {
         background: var(--dark-surface);
-        padding: 1rem 0;
+        padding: 1em;
         overflow: hidden;
         border-top: 1px solid var(--dark-border);
         border-bottom: 1px solid var(--dark-border);
+        height: 30px;
     }
 
     .moving-text {
@@ -171,6 +172,8 @@
         align-items: center;
         white-space: nowrap;
         animation: scroll 30s linear infinite;
+        width: max-content;
+        height: 100%;
     }
 
     .moving-text span {
@@ -178,6 +181,9 @@
         font-weight: 500;
         margin: 0 1rem;
         font-size: 0.875rem;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
     }
 
     @keyframes scroll {
@@ -632,7 +638,7 @@
 </section>
 
 <!-- Moving Text Divider -->
-<div class="moving-text-container">
+<!-- <div class="moving-text-container" style="height:20px !important">
     <div class="moving-text">
         <span>Document Analysis</span>
         <span>•</span>
@@ -657,11 +663,35 @@
         <span>Content Verification</span>
         <span>•</span>
         <span>Document Integrity</span>
+        <span>•</span>
+        <span>Document Analysis</span>
+        <span>•</span>
+        <span>Version Control</span>
+        <span>•</span>
+        <span>Change Tracking</span>
+        <span>•</span>
+        <span>Revision History</span>
+        <span>•</span>
+        <span>Content Verification</span>
+        <span>•</span>
+        <span>Document Integrity</span>
+        <span>•</span>
+        <span>Document Analysis</span>
+        <span>•</span>
+        <span>Version Control</span>
+        <span>•</span>
+        <span>Change Tracking</span>
+        <span>•</span>
+        <span>Revision History</span>
+        <span>•</span>
+        <span>Content Verification</span>
+        <span>•</span>
+        <span>Document Integrity</span>
     </div>
-</div>
+</div> -->
 
 <!-- Features Section -->
-<section class="section">
+<section id="features" class="section">
     <div class="container">
         <div class="section-header">
             <div class="section-badge">Why Choose CheatInSights?</div>
