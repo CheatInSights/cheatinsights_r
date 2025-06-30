@@ -168,7 +168,7 @@ def contact_submit(request):
         data = json.loads(request.body)
         
         # Extract form data
-        first_name = data.get('firstName', '')
+        name = data.get('name', '')
         organization = data.get('organization', '')
         email = data.get('emailAddress', '')
         inquiry_type = data.get('inquiryType', '')
@@ -176,19 +176,19 @@ def contact_submit(request):
         message = data.get('message', '')
         
         # Validate required fields
-        if not all([first_name, organization, email, inquiry_type, message]):
+        if not all([name, organization, email, inquiry_type, message]):
             return JsonResponse({
                 'success': False,
                 'message': 'Please fill in all required fields.'
             }, status=400)
         
         # Prepare email content
-        subject = f"CheatInSights Contact: {inquiry_type.title()} - {first_name}"
+        subject = f"CheatInSights Contact: {inquiry_type.title()} - {name}"
         
         email_body = f"""
 New Contact Form Submission
 
-Name: {first_name}
+Name: {name}
 Organization: {organization}
 Email: {email}
 Inquiry Type: {inquiry_type}
