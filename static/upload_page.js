@@ -223,6 +223,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.selectDocument = function(fileName) {
+        // console.log('1. selectDocument called with:', fileName);
         // Update active row
         document.querySelectorAll('#documentTabs tr').forEach(row => {
             row.classList.remove('active');
@@ -241,11 +242,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Display selected document
         displayDocument(fileName);
         
-        // // Simulate clicking the Focus button to switch to singleview page
-        // const focusButton = document.getElementById('singleview_button');
-        // if (focusButton) {
-        //     focusButton.click();
-        // }
     };
 
     window.switchDocument = function(fileName) {
@@ -275,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function displayDocument(fileName) {
-        // console.log(documentResults)
+        // console.log('2. displayDocument called with:', fileName);
         const result = documentResults[fileName];
         if (result && result.html) {
             // Extract the style section from the HTML
@@ -324,6 +320,12 @@ document.addEventListener('DOMContentLoaded', function() {
             // Display metadata
             if (result.metadata) {
                 displayMetadata(result.metadata);
+            }
+
+            // Display suspicion score
+            if (result.metrics) {
+                // console.log('3. Metrics for this document:', JSON.stringify(result.metrics, null, 2));
+                displaySuspicionScore(result.metrics);
             }
         }
     }
@@ -697,11 +699,19 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         let html = '<div class="suspicion-score-container">';
-
+        
+        let colour = 'green';
+        if (suspicionScoreData.total_score >80 ) {
+            colour = 'red';
+        }else if (suspicionScoreData.total_score >60){
+            colour = 'orange';
+        }else if (suspicionScoreData.total_score >40){
+            colour = 'yellow';
+        };
         // Main score display
         html += '<div class="score-display">';
         html += `<div class="main-score">Suspicion Score: <span class="score-value">${suspicionScoreData.score}%</span></div>`;
-        html += `<div class="total-score">Raw Score: ${suspicionScoreData.total_score}</div>`;
+        html += `<div class="total-score" style='color: ${colour};'>Raw Score: ${suspicionScoreData.total_score}</div>`;
         html += '</div>';
 
         // Factors that contributed to the score
@@ -751,14 +761,6 @@ document.addEventListener('DOMContentLoaded', function() {
             if (firstFileName) {
                 displayDocument(firstFileName);
             }
-
-            // Display suspicion score for the first document (or average if multiple)
-            if (response.results && Object.keys(response.results).length > 0) {
-                const firstResult = response.results[firstFileName];
-                if (firstResult.metrics) {
-                    displaySuspicionScore(firstResult.metrics);
-                }
-            }
         } else if (response.metrics) {
             // Single file upload - set up documentResults for consistency
             const fileName = selectedFiles[0].name;
@@ -777,17 +779,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Display the single document
             displayDocument(fileName);
-            
-            // Display suspicion score
-            displaySuspicionScore(response.metrics);
         }
 
         // Display shared RSIDs if present
         if (response.shared_rsids !== undefined) {
             displaySharedRsids(response.shared_rsids);
         }
-
-
     }
 
     fileInput.addEventListener('change', function () {
