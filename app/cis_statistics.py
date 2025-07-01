@@ -45,23 +45,21 @@ class DOCXStatistics:
 
     def get_average_num_char_per_unique_rsid(self):
         """
-        Calculates the average number of characters per unique RSID.
+        Calculates the average number of characters per unique RSID actually used in the document's runs.
         """
-        # Get unique RSIDs from settings
-        unique_rsids = set()
-        if self.settings_rsids and 'rsids' in self.settings_rsids:
-            unique_rsids = {rsid['value'] for rsid in self.settings_rsids['rsids']}
-        
-        if not unique_rsids:
-            return 0
-            
-        # Calculate total characters
+        used_rsids = set()
         total_char = 0
         for paragraph in self.paragraphs:
             for run in paragraph.get('runs', []):
-                total_char += len(run.get('text', ''))
+                rsid = run.get('rsid')
+                if rsid:
+                    used_rsids.add(rsid)
+                    total_char += len(run.get('text', ''))
 
-        return total_char / len(unique_rsids) if unique_rsids else 0
+        if not used_rsids:
+            return 0
+
+        return total_char / len(used_rsids)
 
     def get_average_num_char_per_run(self):
         """
