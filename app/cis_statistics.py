@@ -1,5 +1,6 @@
 import re
 from collections import defaultdict
+from datetime import datetime
 
 # Control terminal output - set to True for detailed debug output, False for checkpoint only
 DEBUG_OUTPUT = False
@@ -169,6 +170,7 @@ class DOCXStatistics:
             "modified_before_created": 25,
             "missing_metadata": 15,
             "long_run_outlier": 25, # Renamed from high_avg_chars_per_rsid
+            "writing_speed": 20, # New rule for suspicious writing speed
         }
 
         # Initialize variables
@@ -218,6 +220,34 @@ class DOCXStatistics:
                 f"{len(long_runs)} unusually long text run(s) detected "
                 f"(over {threshold:.0f} chars), suggesting copy-paste."
             )
+
+        # --- Rule 5: Suspicious Writing Speed ---
+        modified_time = self.metadata.get('docx_core_properties', {}).get('modified')
+        if created_time and modified_time and self.word_count > 0:
+            try:
+                # Calculate time difference in minutes
+                if isinstance(created_time, str):
+                    created_time = datetime.strptime(created_time.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+                if isinstance(modified_time, str):
+                    modified_time = datetime.strptime(modified_time.split('.')[0], '%Y-%m-%dT%H:%M:%S')
+                
+                time_diff = modified_time - created_time
+                time_diff_minutes = time_diff.total_seconds() / 60
+                
+                # Skip writing speed calculation if timestamps are invalid (Rule 2 already handles this)
+                if time_diff_minutes > 1:
+                    words_per_minute = self.word_count / time_diff_minutes
+                    
+                    # Flag if writing speed is suspiciously high (>200 WPM)
+                    if words_per_minute > 200:
+                        score += SUSPICION_RULES["writing_speed"]
+                        factors.append(
+                            f"Suspicious writing speed: {words_per_minute:.0f} words per minute "
+                            f"({self.word_count} words in {time_diff_minutes:.1f} minutes)."
+                        )
+            except (ValueError, TypeError) as e:
+                # Skip this rule if date parsing fails
+                self.debug_print(f"Could not parse dates for writing speed calculation: {e}")
 
         # Normalize score (0-100 scale)
         max_possible_score = sum(SUSPICION_RULES.values())

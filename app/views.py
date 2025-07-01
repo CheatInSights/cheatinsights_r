@@ -162,7 +162,7 @@ def handle_multiple_uploads(request):
 
             # --- Recalculate normalized score after all rules applied ---
             # Adjust this if you add/remove rules or change their weights
-            max_possible_score = sum([15, 25, 15, 25, 30, 30, 30])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, author collusion, modifier collusion, RSID collusion
+            max_possible_score = sum([15, 25, 15, 25, 20, 30, 30, 30])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, writing_speed, author collusion, modifier collusion, RSID collusion
             for doc_name, result in results.items():
                 result['metrics']['score'] = round((result['metrics']['total_score'] / max_possible_score) * 100, 2)
 
