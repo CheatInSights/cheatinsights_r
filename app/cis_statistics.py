@@ -171,6 +171,7 @@ class DOCXStatistics:
             "missing_metadata": 15,
             "long_run_outlier": 25, # Renamed from high_avg_chars_per_rsid
             "writing_speed": 20, # New rule for suspicious writing speed
+            "rsid_density": 20, # New rule for suspicious RSID density
         }
 
         # Initialize variables
@@ -248,6 +249,24 @@ class DOCXStatistics:
             except (ValueError, TypeError) as e:
                 # Skip this rule if date parsing fails
                 self.debug_print(f"Could not parse dates for writing speed calculation: {e}")
+
+        # --- Rule 6: Suspicious RSID Density ---
+        # Get unique RSID count from settings
+        unique_rsid_count = len(self.char_per_unique_rsid)
+        
+        if unique_rsid_count > 0 and self.word_count > 0:
+            # Calculate RSID density (words per unique RSID)
+            words_per_rsid = self.word_count / unique_rsid_count
+            
+            # Flag if RSID density is suspiciously high (too many words per RSID)
+            # Threshold: More than 500 words per unique RSID suggests copy-pasting
+            if words_per_rsid > 500:
+                score += SUSPICION_RULES["rsid_density"]
+                factors.append(
+                    f"Suspicious RSID density: {words_per_rsid:.0f} words per unique RSID "
+                    f"({self.word_count} words, {unique_rsid_count} unique RSIDs). "
+                    f"This suggests copy-pasting or single-session creation."
+                )
 
         # Normalize score (0-100 scale)
         max_possible_score = sum(SUSPICION_RULES.values())

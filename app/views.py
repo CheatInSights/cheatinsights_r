@@ -90,6 +90,34 @@ def handle_multiple_uploads(request):
             colluding_authors = {author: indices for author, indices in author_to_docs.items() if len(indices) > 1}
             colluding_modifiers = {modifier: indices for modifier, indices in modifier_to_docs.items() if len(indices) > 1}
 
+            # --- Cross-Document RSID Density Analysis ---
+            # Calculate RSID density for each document
+            rsid_densities = []
+            for doc_data in doc_data_list:
+                unique_rsid_count = len(doc_data["statistics_obj"].char_per_unique_rsid)
+                word_count = doc_data["statistics_obj"].word_count
+                if unique_rsid_count > 0 and word_count > 0:
+                    density = word_count / unique_rsid_count
+                    rsid_densities.append(density)
+            
+            # Calculate statistical outliers if we have multiple documents with valid densities
+            rsid_density_outliers = set()
+            if len(rsid_densities) > 1:
+                import statistics
+                mean_density = statistics.mean(rsid_densities)
+                std_dev = statistics.stdev(rsid_densities) if len(rsid_densities) > 1 else 0
+                
+                # Flag documents more than 2 standard deviations above the mean
+                threshold = mean_density + (2 * std_dev)
+                
+                for i, doc_data in enumerate(doc_data_list):
+                    unique_rsid_count = len(doc_data["statistics_obj"].char_per_unique_rsid)
+                    word_count = doc_data["statistics_obj"].word_count
+                    if unique_rsid_count > 0 and word_count > 0:
+                        density = word_count / unique_rsid_count
+                        if density > threshold:
+                            rsid_density_outliers.add(i)
+
             # --- Second Pass: Finalize results with cross-doc insights ---
             results = {}
             for i, doc_data in enumerate(doc_data_list):
@@ -115,6 +143,14 @@ def handle_multiple_uploads(request):
                     )
                     print(f"[DEBUG] {doc_data['filename']} - After modifier collusion: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
                 
+                # Cross-document Rule 3: RSID density outlier compared to batch
+                if i in rsid_density_outliers:
+                    suspicion_result['total_score'] += 20
+                    suspicion_result['factors'].append(
+                        f"RSID density is suspiciously high compared to other documents in this batch (possible copy-pasting)."
+                    )
+                    print(f"[DEBUG] {doc_data['filename']} - After RSID density outlier: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
+
                 # Generate HTML for the document
                 json_data = json.dumps(doc_data["paragraphs"], ensure_ascii=False)
                 json_obj = io.StringIO(json_data)
@@ -162,7 +198,7 @@ def handle_multiple_uploads(request):
 
             # --- Recalculate normalized score after all rules applied ---
             # Adjust this if you add/remove rules or change their weights
-            max_possible_score = sum([15, 25, 15, 25, 20, 30, 30, 30])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, writing_speed, author collusion, modifier collusion, RSID collusion
+            max_possible_score = sum([15, 25, 15, 25, 20, 20, 30, 30, 30, 20])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, writing_speed, rsid_density, author collusion, modifier collusion, RSID collusion, cross-doc RSID density
             for doc_name, result in results.items():
                 result['metrics']['score'] = round((result['metrics']['total_score'] / max_possible_score) * 100, 2)
 
