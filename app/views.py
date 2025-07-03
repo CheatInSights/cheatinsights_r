@@ -93,25 +93,15 @@ def handle_multiple_uploads(request):
             # --- Cross-Document RSID Density Analysis ---
             # Calculate RSID density for each document
             rsid_densities = []
-            chars_per_run_list = []  # For batch outlier rule
             for doc_data in doc_data_list:
                 unique_rsid_count = len(doc_data["statistics_obj"].char_per_unique_rsid)
                 word_count = doc_data["statistics_obj"].word_count
-                total_characters = sum(doc_data["statistics_obj"].char_per_run)
-                total_runs = len(doc_data["statistics_obj"].char_per_run)
                 if unique_rsid_count > 0 and word_count > 0:
                     density = word_count / unique_rsid_count
                     rsid_densities.append(density)
-                # Calculate characters per run for each document
-                if total_runs > 0:
-                    chars_per_run = total_characters / total_runs
-                    chars_per_run_list.append(chars_per_run)
-                else:
-                    chars_per_run_list.append(0)
             
             # Calculate statistical outliers if we have multiple documents with valid densities
             rsid_density_outliers = set()
-            chars_per_run_outliers = set()
             if len(rsid_densities) > 1:
                 import statistics
                 mean_density = statistics.mean(rsid_densities)
@@ -127,15 +117,6 @@ def handle_multiple_uploads(request):
                         density = word_count / unique_rsid_count
                         if density > threshold:
                             rsid_density_outliers.add(i)
-            # Batch outlier rule for characters per run
-            if len(chars_per_run_list) > 1:
-                import statistics
-                mean_chars_per_run = statistics.mean(chars_per_run_list)
-                std_chars_per_run = statistics.stdev(chars_per_run_list) if len(chars_per_run_list) > 1 else 0
-                chars_per_run_threshold = mean_chars_per_run + (2 * std_chars_per_run)
-                for i, chars_per_run in enumerate(chars_per_run_list):
-                    if chars_per_run > chars_per_run_threshold:
-                        chars_per_run_outliers.add(i)
 
             # --- Second Pass: Finalize results with cross-doc insights ---
             results = {}
@@ -169,14 +150,6 @@ def handle_multiple_uploads(request):
                         f"RSID density is suspiciously high compared to other documents in this batch (possible copy-pasting)."
                     )
                     print(f"[DEBUG] {doc_data['filename']} - After RSID density outlier: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
-
-                # Cross-document Rule 4: Characters per run outlier compared to batch
-                if i in chars_per_run_outliers:
-                    suspicion_result['total_score'] += 15
-                    suspicion_result['factors'].append(
-                        f"Characters per run is much higher than other documents in this batch (possible copy-pasting or bulk writing)."
-                    )
-                    print(f"[DEBUG] {doc_data['filename']} - After chars per run outlier: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
 
                 # Generate HTML for the document
                 json_data = json.dumps(doc_data["paragraphs"], ensure_ascii=False)
@@ -225,7 +198,7 @@ def handle_multiple_uploads(request):
 
             # --- Recalculate normalized score after all rules applied ---
             # Adjust this if you add/remove rules or change their weights
-            max_possible_score = sum([15, 25, 15, 25, 20, 20, 30, 30, 30, 20, 15])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, writing_speed, rsid_density, author collusion, modifier collusion, RSID collusion, cross-doc RSID density, cross-doc chars per run
+            max_possible_score = sum([15, 25, 15, 25, 20, 20, 30, 30, 30, 20])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, writing_speed, rsid_density, author collusion, modifier collusion, RSID collusion, cross-doc RSID density
             for doc_name, result in results.items():
                 result['metrics']['score'] = round((result['metrics']['total_score'] / max_possible_score) * 100, 2)
 
