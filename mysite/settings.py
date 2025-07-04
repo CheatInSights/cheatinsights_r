@@ -192,28 +192,9 @@ CORS_ALLOW_CREDENTIALS = True
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Email Configuration
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-# For production: Use SMTP backend
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-# For testing: Use console backend (emails printed to console)
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-=======
 # Determine email backend based on environment and credentials
 EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
 
-=======
-# Determine email backend based on environment and credentials
-EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
-
->>>>>>> Stashed changes
-=======
-# Determine email backend based on environment and credentials
-EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
-
->>>>>>> Stashed changes
 if DEBUG or not EMAIL_HOST_PASSWORD_ENV:
     # Use console backend for development or when no SMTP password is configured
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -222,13 +203,6 @@ else:
     # Use SMTP backend for production with proper credentials
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     print("Using SMTP email backend for production")
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
 
 # Zoho Mail Configuration
 EMAIL_HOST = 'smtp.zoho.com'  # Zoho SMTP server
