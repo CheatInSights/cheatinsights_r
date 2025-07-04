@@ -194,6 +194,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # Email Configuration
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 # For production: Use SMTP backend
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 
@@ -208,6 +209,11 @@ EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
 EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
 
 >>>>>>> Stashed changes
+=======
+# Determine email backend based on environment and credentials
+EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
+
+>>>>>>> Stashed changes
 if DEBUG or not EMAIL_HOST_PASSWORD_ENV:
     # Use console backend for development or when no SMTP password is configured
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -217,6 +223,9 @@ else:
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     print("Using SMTP email backend for production")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
