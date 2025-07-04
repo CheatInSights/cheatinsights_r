@@ -262,13 +262,20 @@ This message was sent from the CheatInSights contact form.
         """
         
         # Send email
-        send_mail(
-            subject=subject,
-            message=email_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[settings.CONTACT_EMAIL],  # Configure this in settings
-            fail_silently=False,
-        )
+        try:
+            send_mail(
+                subject=subject,
+                message=email_body,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=[settings.CONTACT_EMAIL],  # Configure this in settings
+                fail_silently=False,
+            )
+        except Exception as email_error:
+            # Log the email error but don't crash the application
+            print(f"EMAIL ERROR: {email_error}")
+            # Still return success to user, but log the issue
+            # In production, you might want to send this to a logging service
+            # You could also store the message in a database for later processing
         
         return JsonResponse({
             'success': True,
