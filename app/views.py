@@ -125,7 +125,8 @@ def handle_multiple_uploads(request):
                 suspicion_result = doc_data["statistics_obj"].calculate_suspicion_score()
                 print(f"[DEBUG] {doc_data['filename']} - After per-document rules: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
 
-                # Cross-document Rule 1: Author appears in multiple documents
+                # Cross-document Rule 1: Author Collusion
+                # (Cross-document) Adds 30 if the same author appears in multiple uploaded documents
                 author = doc_data["statistics_obj"].get_author()
                 if author in colluding_authors:
                     suspicion_result['total_score'] += 30
@@ -134,7 +135,8 @@ def handle_multiple_uploads(request):
                     )
                     print(f"[DEBUG] {doc_data['filename']} - After author collusion: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
                 
-                # Cross-document Rule 2: 'Last Modified By' appears in multiple documents
+                # Cross-document Rule 2: Modifier Collusion
+                # (Cross-document) Adds 30 if the same last modified by appears in multiple uploaded documents
                 modifier = doc_data["statistics_obj"].get_last_modified_by()
                 if modifier in colluding_modifiers:
                     suspicion_result['total_score'] += 30
@@ -143,7 +145,8 @@ def handle_multiple_uploads(request):
                     )
                     print(f"[DEBUG] {doc_data['filename']} - After modifier collusion: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
                 
-                # Cross-document Rule 3: RSID density outlier compared to batch
+                # Cross-document Rule 3: RSID Density Batch Outlier
+                # (Batch outlier) Adds 20 if RSID density is a statistical outlier compared to the batch
                 if i in rsid_density_outliers:
                     suspicion_result['total_score'] += 20
                     suspicion_result['factors'].append(
@@ -278,9 +281,12 @@ This message was sent from the CheatInSights contact form.
             'message': 'Invalid form data.'
         }, status=400)
     except Exception as e:
+        import traceback
+        print("EMAIL ERROR:", e)
+        traceback.print_exc()
         return JsonResponse({
             'success': False,
-            'message': 'An error occurred while sending your message. Please try again.'
+            'message': f'An error occurred while sending your message: {e}'
         }, status=500)
 
 

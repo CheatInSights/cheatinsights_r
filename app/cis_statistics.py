@@ -183,16 +183,19 @@ class DOCXStatistics:
         revision = self.get_revision()
 
         # --- Rule 1: Different Author and Modifier ---
+        # (Per-document) Adds 15 if author and last modified by are different
         if author and last_modified_by and author != last_modified_by:
             score += SUSPICION_RULES["different_author"]
             factors.append("Author and Last Modified By are different.")
 
-        # --- Rule 2: Last Modified By is earlier than Creation Time ---
+        # --- Rule 2: Modified Before Created ---
+        # (Per-document) Adds 25 if last modified is earlier than created
         if last_modified_by and created_time and created_time > self.metadata.get('docx_core_properties', {}).get('modified', created_time):
             score += SUSPICION_RULES["modified_before_created"]
             factors.append("Document was last modified before it was created.")
 
         # --- Rule 3: Missing Metadata ---
+        # (Per-document) Adds 15 if author, last modified by, or revision is missing
         missing_fields = []
         if not author:
             missing_fields.append("Author")
@@ -205,39 +208,30 @@ class DOCXStatistics:
             score += SUSPICION_RULES["missing_metadata"]
             factors.append(f"Missing key metadata: {', '.join(missing_fields)}.")
 
-        # --- Rule 4: Long Run Outlier Detection (Method 3) ---
-        # Get character counts for every run in the document
+        # --- Rule 4: Long Run Outlier Detection (IQR) ---
+        # (Per-document) Adds 25 if unusually long text runs are detected
         run_char_counts = self.get_list_char_per_run()
-        
-        # Calculate the outlier threshold and find any long runs
         threshold, long_runs = self._calculate_iqr_outliers(run_char_counts)
-        
         if long_runs:
             score += SUSPICION_RULES["long_run_outlier"]
-            # To avoid clutter, you might only report the number of outliers and the threshold
             factors.append(
                 f"{len(long_runs)} unusually long text run(s) detected "
                 f"(over {threshold:.0f} chars), suggesting copy-paste."
             )
 
         # --- Rule 5: Suspicious Writing Speed ---
+        # (Per-document) Adds 20 if writing speed is suspiciously high (>200 WPM)
         modified_time = self.metadata.get('docx_core_properties', {}).get('modified')
         if created_time and modified_time and self.word_count > 0:
             try:
-                # Calculate time difference in minutes
                 if isinstance(created_time, str):
                     created_time = datetime.strptime(created_time.split('.')[0], '%Y-%m-%dT%H:%M:%S')
                 if isinstance(modified_time, str):
                     modified_time = datetime.strptime(modified_time.split('.')[0], '%Y-%m-%dT%H:%M:%S')
-                
                 time_diff = modified_time - created_time
                 time_diff_minutes = time_diff.total_seconds() / 60
-                
-                # Skip writing speed calculation if timestamps are invalid (Rule 2 already handles this)
                 if time_diff_minutes > 1:
                     words_per_minute = self.word_count / time_diff_minutes
-                    
-                    # Flag if writing speed is suspiciously high (>200 WPM)
                     if words_per_minute > 200:
                         score += SUSPICION_RULES["writing_speed"]
                         factors.append(
@@ -245,19 +239,13 @@ class DOCXStatistics:
                             f"({self.word_count} words in {time_diff_minutes:.1f} minutes)."
                         )
             except (ValueError, TypeError) as e:
-                # Skip this rule if date parsing fails
                 self.debug_print(f"Could not parse dates for writing speed calculation: {e}")
 
-        # --- Rule 6: Suspicious RSID Density ---
-        # Get unique RSID count from settings
+        # --- Rule 6: Suspicious RSID Density (Fixed Threshold) ---
+        # (Per-document) Adds 20 if words per unique RSID > 500
         unique_rsid_count = len(self.char_per_unique_rsid)
-        
         if unique_rsid_count > 0 and self.word_count > 0:
-            # Calculate RSID density (words per unique RSID)
             words_per_rsid = self.word_count / unique_rsid_count
-            
-            # Flag if RSID density is suspiciously high (too many words per RSID)
-            # Threshold: More than 500 words per unique RSID suggests copy-pasting
             if words_per_rsid > 500:
                 score += SUSPICION_RULES["rsid_density"]
                 factors.append(
