@@ -193,24 +193,31 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Email Configuration
 # Determine email backend based on environment and credentials
-EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
+# EMAIL_HOST_PASSWORD_ENV = os.getenv('EMAIL_HOST_PASSWORD', '')
 
-if DEBUG or not EMAIL_HOST_PASSWORD_ENV:
-    # Use console backend for development or when no SMTP password is configured
-    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    print("Using console email backend for development/testing")
-else:
-    # Use SMTP backend for production with proper credentials
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    print("Using SMTP email backend for production")
 
-# Zoho Mail Configuration
-EMAIL_HOST = 'smtp.zoho.com'  # Zoho SMTP server
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'contact@cheatinsights.com')  # Your Zoho email address
-EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_ENV  # Your Zoho app password
-DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'contact@cheatinsights.com')
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# print("Using console email backend for development/testing")
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# print("Using SMTP email backend for production")
 
-# Contact form recipient email
-CONTACT_EMAIL = os.getenv('CONTACT_EMAIL', 'contact@cheatinsights.com')
+# # Zoho Mail Configuration
+# EMAIL_HOST = 'smtp.zoho.com'  # Zoho SMTP server
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'contact@cheatinsights.com')  # Your Zoho email address
+# EMAIL_HOST_PASSWORD = EMAIL_HOST_PASSWORD_ENV  # Your Zoho app password
+# DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'contact@cheatinsights.com')
+
+# # Contact form recipient email
+# CONTACT_EMAIL = os.getenv('CONTACT_EMAIL', 'contact@cheatinsights.com')
+from decouple import config
+
+EMAIL_BACKEND = config('EMAIL_BACKEND')
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT', cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', cast=bool)
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL')
+CONTACT_EMAIL = config('CONTACT_EMAIL')
