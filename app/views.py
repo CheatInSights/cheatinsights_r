@@ -154,6 +154,31 @@ def handle_multiple_uploads(request):
                     )
                     print(f"[DEBUG] {doc_data['filename']} - After RSID density outlier: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
 
+                # Cross-document Rule 4: Author-Modifier Cross-Pollination
+                # (Cross-document) Adds 25 if an author appears as a modifier in another document (and vice versa)
+                author = doc_data["statistics_obj"].get_author()
+                modifier = doc_data["statistics_obj"].get_last_modified_by()
+                
+                # Check if this author is a modifier in other docs
+                if author and author in modifier_to_docs:
+                    other_doc_indices = [idx for idx in modifier_to_docs[author] if idx != i]
+                    if other_doc_indices:
+                        suspicion_result['total_score'] += 25
+                        suspicion_result['factors'].append(
+                            f"Author '{author}' also appears as a modifier in other uploaded documents (possible collaboration)."
+                        )
+                        print(f"[DEBUG] {doc_data['filename']} - After author-modifier cross-pollination: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
+                
+                # Check if this modifier is an author in other docs
+                if modifier and modifier in author_to_docs:
+                    other_doc_indices = [idx for idx in author_to_docs[modifier] if idx != i]
+                    if other_doc_indices:
+                        suspicion_result['total_score'] += 25
+                        suspicion_result['factors'].append(
+                            f"Modifier '{modifier}' also appears as an author in other uploaded documents (possible collaboration)."
+                        )
+                        print(f"[DEBUG] {doc_data['filename']} - After modifier-author cross-pollination: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
+
                 # Generate HTML for the document
                 json_data = json.dumps(doc_data["paragraphs"], ensure_ascii=False)
                 json_obj = io.StringIO(json_data)
@@ -201,7 +226,7 @@ def handle_multiple_uploads(request):
 
             # --- Recalculate normalized score after all rules applied ---
             # Adjust this if you add/remove rules or change their weights
-            max_possible_score = sum([15, 25, 15, 25, 20, 20, 30, 30, 30, 20])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, writing_speed, rsid_density, author collusion, modifier collusion, RSID collusion, cross-doc RSID density
+            max_possible_score = sum([15, 25, 15, 25, 20, 20, 30, 30, 30, 20, 25])  # All rule weights: different_author, modified_before_created, missing_metadata, long_run_outlier, writing_speed, rsid_density, author collusion, modifier collusion, RSID collusion, cross-doc RSID density, author-modifier cross-pollination
             for doc_name, result in results.items():
                 result['metrics']['score'] = round((result['metrics']['total_score'] / max_possible_score) * 100, 2)
 

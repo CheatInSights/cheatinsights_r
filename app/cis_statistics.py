@@ -167,7 +167,7 @@ class DOCXStatistics:
             "different_author": 15,
             "modified_before_created": 25,
             "missing_metadata": 15,
-            "long_run_outlier": 25, # Renamed from high_avg_chars_per_rsid
+            "long_run_outlier": 25, # high word count per run
             "writing_speed": 20, # New rule for suspicious writing speed
             "rsid_density": 20, # New rule for suspicious RSID density
         }
