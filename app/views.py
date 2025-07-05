@@ -94,6 +94,7 @@ def handle_multiple_uploads(request):
             results = {}
             for i, doc_data in enumerate(doc_data_list):
                 # Calculate the base suspicion score for this document
+                # !!! obtains the per-document score (base score)
                 suspicion_result = doc_data["statistics_obj"].calculate_suspicion_score()
                 print(f"[DEBUG] {doc_data['filename']} - After per-document rules: total_score={suspicion_result['total_score']}, factors={suspicion_result['factors']}")
 

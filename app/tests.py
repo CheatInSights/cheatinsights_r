@@ -122,3 +122,206 @@ class DOCXStatisticsPerDocumentRulesTests(TestCase):
         self.assertTrue(any('Suspicious RSID density' in f for f in result['factors']))
         self.assertGreater(result['score'], 0)
 
+
+class CrossDocumentRulesTests(TestCase):
+    """Test the cross-document suspicion rules that are implemented in views.py"""
+    
+    def setUp(self):
+        """Set up test data for cross-document rule testing."""
+        self.base_metadata = {
+            'docx_core_properties': {
+                'created': datetime(2023, 1, 1),
+                'modified': datetime(2023, 1, 2),
+                'revision': '1',
+            },
+            'core_properties': {}
+        }
+
+    def create_doc_stats(self, author, modifier, rsids, paragraphs=None):
+        """Helper method to create DOCXStatistics objects for testing."""
+        if paragraphs is None:
+            paragraphs = [{'runs': [{'text': 'Test content', 'rsid': rsids[0]}]}]
+        
+        metadata = {
+            'docx_core_properties': {
+                'author': author,
+                'last_modified_by': modifier,
+                'created': datetime(2023, 1, 1),
+                'modified': datetime(2023, 1, 2),
+                'revision': '1',
+            },
+            'core_properties': {}  # Empty to avoid conflicts
+        }
+        
+        settings_rsids = {'rsids': [{'value': rsid} for rsid in rsids]}
+        
+        return DOCXStatistics(paragraphs, metadata, settings_rsids)
+
+    def test_author_collusion_rule(self):
+        """Test that documents with the same author trigger the author collusion rule."""
+        # Create two documents with the same author
+        doc1 = self.create_doc_stats('Student A', 'Student A', ['RSID1'])
+        doc2 = self.create_doc_stats('Student A', 'Student B', ['RSID2'])
+        
+        # Simulate the author collusion logic from views.py
+        from collections import defaultdict
+        doc_data_list = [
+            {'statistics_obj': doc1, 'filename': 'doc1.docx'},
+            {'statistics_obj': doc2, 'filename': 'doc2.docx'}
+        ]
+        
+        # Build author mapping
+        author_to_docs = defaultdict(list)
+        for i, doc_data in enumerate(doc_data_list):
+            author = doc_data["statistics_obj"].get_author()
+            if author:
+                author_to_docs[author].append(i)
+        
+        # Find colluding authors
+        colluding_authors = {author: indices for author, indices in author_to_docs.items() if len(indices) > 1}
+        
+        # Test that Student A is flagged as colluding
+        self.assertIn('Student A', colluding_authors)
+        self.assertEqual(len(colluding_authors['Student A']), 2)
+        self.assertEqual(set(colluding_authors['Student A']), {0, 1})
+
+    def test_modifier_collusion_rule(self):
+        """Test that documents with the same modifier trigger the modifier collusion rule."""
+        # Create two documents with the same modifier
+        doc1 = self.create_doc_stats('Student A', 'Student X', ['RSID1'])
+        doc2 = self.create_doc_stats('Student B', 'Student X', ['RSID2'])
+        
+        # Simulate the modifier collusion logic from views.py
+        from collections import defaultdict
+        doc_data_list = [
+            {'statistics_obj': doc1, 'filename': 'doc1.docx'},
+            {'statistics_obj': doc2, 'filename': 'doc2.docx'}
+        ]
+        
+        # Build modifier mapping
+        modifier_to_docs = defaultdict(list)
+        for i, doc_data in enumerate(doc_data_list):
+            modifier = doc_data["statistics_obj"].get_last_modified_by()
+            if modifier:
+                modifier_to_docs[modifier].append(i)
+        
+        # Find colluding modifiers
+        colluding_modifiers = {modifier: indices for modifier, indices in modifier_to_docs.items() if len(indices) > 1}
+        
+        # Test that Student X is flagged as colluding
+        self.assertIn('Student X', colluding_modifiers)
+        self.assertEqual(len(colluding_modifiers['Student X']), 2)
+        self.assertEqual(set(colluding_modifiers['Student X']), {0, 1})
+
+    def test_rsid_collusion_rule(self):
+        """Test that documents with shared RSIDs trigger the RSID collusion rule."""
+        # Create two documents with the same RSID
+        doc1 = self.create_doc_stats('Student A', 'Student A', ['SHARED_RSID'])
+        doc2 = self.create_doc_stats('Student B', 'Student B', ['SHARED_RSID'])
+        
+        # Simulate the RSID collusion logic from views.py
+        from collections import defaultdict
+        doc_data_list = [
+            {'filename': 'doc1.docx', 'settings_rsids': doc1.settings_rsids},
+            {'filename': 'doc2.docx', 'settings_rsids': doc2.settings_rsids}
+        ]
+        
+        # Build RSID mapping
+        doc_rsids = {doc['filename']: set(rsid['value'] for rsid in doc['settings_rsids'].get('rsids', [])) for doc in doc_data_list}
+        rsid_to_docs = defaultdict(set)
+        for doc, rsids in doc_rsids.items():
+            for rsid in rsids:
+                rsid_to_docs[rsid].add(doc)
+        
+        # Find shared RSIDs
+        shared_rsids = {rsid: sorted(list(docs)) for rsid, docs in rsid_to_docs.items() if len(docs) > 1}
+        
+        # Test that SHARED_RSID is flagged as shared
+        self.assertIn('SHARED_RSID', shared_rsids)
+        self.assertEqual(set(shared_rsids['SHARED_RSID']), {'doc1.docx', 'doc2.docx'})
+
+    def test_author_modifier_cross_pollination_rule(self):
+        """Test that author-modifier cross-pollination is detected."""
+        # Create documents where author of one is modifier of another
+        # Doc1: Student A is author
+        # Doc2: Student A is modifier (cross-pollination)
+        doc1 = self.create_doc_stats('Student A', 'Student A', ['RSID1'])
+        doc2 = self.create_doc_stats('Student B', 'Student A', ['RSID2'])  # Student A is modifier here
+        
+        # Simulate the cross-pollination logic from views.py
+        from collections import defaultdict
+        doc_data_list = [
+            {'statistics_obj': doc1, 'filename': 'doc1.docx'},
+            {'statistics_obj': doc2, 'filename': 'doc2.docx'}
+        ]
+        
+        # Build mappings
+        author_to_docs = defaultdict(list)
+        modifier_to_docs = defaultdict(list)
+        for i, doc_data in enumerate(doc_data_list):
+            author = doc_data["statistics_obj"].get_author()
+            modifier = doc_data["statistics_obj"].get_last_modified_by()
+            if author:
+                author_to_docs[author].append(i)
+            if modifier:
+                modifier_to_docs[modifier].append(i)
+        
+        # Test author-modifier cross-pollination
+        # Student A should be author in doc1 and modifier in doc2
+        self.assertIn('Student A', author_to_docs)
+        self.assertIn('Student A', modifier_to_docs)
+        
+        # Check that Student A appears as author in one doc and modifier in another
+        author_indices = author_to_docs['Student A']
+        modifier_indices = modifier_to_docs['Student A']
+        
+        # Should have cross-pollination (Student A is author in one doc, modifier in another)
+        self.assertTrue(len(author_indices) >= 1 and len(modifier_indices) >= 1)
+        # The indices should be different (not the same document)
+        self.assertNotEqual(set(author_indices), set(modifier_indices))
+
+    def test_no_collusion_in_clean_documents(self):
+        """Test that documents with different authors, modifiers, and RSIDs don't trigger collusion rules."""
+        # Create documents with completely different metadata - no shared authors or modifiers
+        doc1 = self.create_doc_stats('Student A', 'Modifier X', ['RSID1'])
+        doc2 = self.create_doc_stats('Student B', 'Modifier Y', ['RSID2'])
+        doc3 = self.create_doc_stats('Student C', 'Modifier Z', ['RSID3'])
+        
+        from collections import defaultdict
+        doc_data_list = [
+            {'statistics_obj': doc1, 'filename': 'doc1.docx'},
+            {'statistics_obj': doc2, 'filename': 'doc2.docx'},
+            {'statistics_obj': doc3, 'filename': 'doc3.docx'}
+        ]
+        
+        # Build mappings
+        author_to_docs = defaultdict(list)
+        modifier_to_docs = defaultdict(list)
+        for i, doc_data in enumerate(doc_data_list):
+            author = doc_data["statistics_obj"].get_author()
+            modifier = doc_data["statistics_obj"].get_last_modified_by()
+            if author:
+                author_to_docs[author].append(i)
+            if modifier:
+                modifier_to_docs[modifier].append(i)
+        
+        # Find colluding authors/modifiers
+        colluding_authors = {author: indices for author, indices in author_to_docs.items() if len(indices) > 1}
+        colluding_modifiers = {modifier: indices for modifier, indices in modifier_to_docs.items() if len(indices) > 1}
+        
+        # Should have no collusion
+        self.assertEqual(len(colluding_authors), 0)
+        self.assertEqual(len(colluding_modifiers), 0)
+        
+        # Test RSID collusion
+        doc_rsids = {doc['filename']: set(rsid['value'] for rsid in doc['statistics_obj'].settings_rsids.get('rsids', [])) for doc in doc_data_list}
+        rsid_to_docs = defaultdict(set)
+        for doc, rsids in doc_rsids.items():
+            for rsid in rsids:
+                rsid_to_docs[rsid].add(doc)
+        
+        shared_rsids = {rsid: sorted(list(docs)) for rsid, docs in rsid_to_docs.items() if len(docs) > 1}
+        
+        # Should have no shared RSIDs
+        self.assertEqual(len(shared_rsids), 0)
+
