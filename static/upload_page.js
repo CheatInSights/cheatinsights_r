@@ -15,16 +15,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const selectedRSID = document.getElementById('selected_RSID');
     const selectedColour = document.getElementById('rsid_color');
     const documentTabs = document.getElementById('documentTabs');
-    const graphContainer = document.getElementById('graphContainer');
     const tableSearch = document.getElementById('tableSearch');
     const riskFilterCheckbox = document.getElementById('riskFilterCheckbox');
     const fileCountSummary = document.getElementById('file-count-summary');
 
-
     let selectedFiles = [];
     let documentResults = {};
     let globalResponse = null; // Global variable to store the full response
-    let metricsDictionary = {};
+
+    // Make documentResults globally accessible for charts.js
+    window.documentResults = documentResults;
 
     // Initialize search functionality
     if (tableSearch) {
@@ -64,7 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.addEventListener(eventName, preventDefaults, false);
     });
 
-    // Highlight drop zone when item is dragged over itg
+    // Highlight drop zone when item is dragged over it
     ['dragenter', 'dragover'].forEach(eventName => {
         dropZone.addEventListener(eventName, highlight, false);
     });
@@ -298,7 +298,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.selectDocument = function(fileName) {
-        // console.log('1. selectDocument called with:', fileName);
         // Update active row
         document.querySelectorAll('#documentTabs tr').forEach(row => {
             row.classList.remove('active');
@@ -316,7 +315,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Display selected document
         displayDocument(fileName);
-        
     };
 
     window.switchDocument = function(fileName) {
@@ -338,7 +336,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Display selected document
         displayDocument(fileName);
         
-        // // Simulate clicking the Focus button to switch to singleview page
+        // Simulate clicking the Focus button to switch to singleview page
         const focusButton = document.getElementById('singleview_button');
         if (focusButton) {
             focusButton.click();
@@ -346,7 +344,6 @@ document.addEventListener('DOMContentLoaded', function() {
     };
 
     function displayDocument(fileName) {
-        // console.log('2. displayDocument called with:', fileName);
         const result = documentResults[fileName];
         if (result && result.html) {
             // Extract the style section from the HTML
@@ -399,7 +396,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
             // Display suspicion score
             if (result.metrics) {
-                // console.log('3. Metrics for this document:', JSON.stringify(result.metrics, null, 2));
                 displaySuspicionScore(result.metrics);
             }
         }
@@ -764,15 +760,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displaySuspicionScore(suspicionScoreData) {
-        // Debug: Log the suspicion score data being displayed
-        console.log("========== DEBUG: DISPLAYING SUSPICION SCORE ==========");
-        console.log("Suspicion score data received:", suspicionScoreData);
-        if (suspicionScoreData) {
-            console.log(`  Total Score: ${suspicionScoreData.total_score}`);
-            console.log(`  Normalized Score: ${suspicionScoreData.score}%`);
-            console.log(`  Factors:`, suspicionScoreData.factors);
-        }
-        
         const section = document.getElementById('suspicionScoreSection');
         const content = document.getElementById('suspicionScoreContent');
         content.innerHTML = '';
@@ -797,12 +784,6 @@ document.addEventListener('DOMContentLoaded', function() {
         html += `<div class="main-score">Suspicion Score: <span class="score-value">${suspicionScoreData.score}%</span></div>`;
         html += `<div class="total-score" style='color: ${colour};'>Raw Score: ${suspicionScoreData.total_score}</div>`;
         html += '</div>';
-
-        // Debug: Log what's being rendered
-        console.log("Rendering suspicion score HTML:");
-        console.log(`  Main score: ${suspicionScoreData.score}%`);
-        console.log(`  Raw score: ${suspicionScoreData.total_score}`);
-        console.log(`  Color: ${colour}`);
 
         // Factors that contributed to the score
         if (suspicionScoreData.factors && suspicionScoreData.factors.length > 0) {
@@ -840,24 +821,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function displayResults(response) {
         // Store the response globally so other functions can access it
         globalResponse = response;
-
-        // Debug: Log the complete response structure
-        console.log("========== DEBUG: FRONTEND RECEIVED DATA ==========");
-        console.log("Complete response:", response);
         
         if (response.results) {
-            console.log("\n========== DEBUG: MULTIPLE FILE RESULTS ==========");
-            Object.keys(response.results).forEach(filename => {
-                const result = response.results[filename];
-                console.log(`\nDocument: ${filename}`);
-                console.log(`  Total Score: ${result.metrics.total_score}`);
-                console.log(`  Normalized Score: ${result.metrics.score}%`);
-                console.log(`  Factors:`, result.metrics.factors);
-                console.log(`  Complete metrics object:`, result.metrics);
-            });
-            
             documentResults = response.results;
-            // console.log(documentResults);
+            // Keep window.documentResults in sync
+            window.documentResults = documentResults;
             createDocumentTabs();
 
             // Display the first document by default
@@ -866,12 +834,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayDocument(firstFileName);
             }
         } else if (response.metrics) {
-            console.log("\n========== DEBUG: SINGLE FILE RESULT ==========");
-            console.log(`Total Score: ${response.metrics.total_score}`);
-            console.log(`Normalized Score: ${response.metrics.score}%`);
-            console.log(`Factors:`, response.metrics.factors);
-            console.log(`Complete metrics object:`, response.metrics);
-            
             // Single file upload - set up documentResults for consistency
             const fileName = selectedFiles[0].name;
             documentResults = {
@@ -883,6 +845,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     metadata: response.metadata
                 }
             };
+            
+            // Keep window.documentResults in sync
+            window.documentResults = documentResults;
             
             // Create document tabs for single file
             createDocumentTabs();
@@ -940,19 +905,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log("processing complete");
                 uploadStatus.textContent = 'Processing Complete!';
                 
-                // Remove all children from fileList and hide it
-                // const fileList = document.getElementById('fileList');
-                
-                // if (fileList) {
-                //     fileList.innerHTML = '';
-                //     fileList.style.display = 'none';
-                // }
-                
                 const response = JSON.parse(xhr.responseText);
                 displayResults(response);
                 
                 // Generate metrics dictionary for both single and multiple file uploads
-                generateMetricsDictionary();
+                console.log('About to call charts module...');
+                console.log('window.chartsModule available:', !!window.chartsModule);
+                console.log('window.chartsModule.generateMetricsDictionary available:', !!(window.chartsModule && window.chartsModule.generateMetricsDictionary));
+                if (window.chartsModule && window.chartsModule.generateMetricsDictionary) {
+                    console.log('Calling generateMetricsDictionary...');
+                    window.chartsModule.generateMetricsDictionary();
+                    console.log('generateMetricsDictionary called successfully');
+                } else {
+                    console.warn('Charts module not loaded');
+                }
             } else {
                 const response = JSON.parse(xhr.responseText);
                 uploadStatus.textContent = response.error || 'Upload failed. Please try again.';
@@ -974,8 +940,6 @@ document.addEventListener('DOMContentLoaded', function() {
     function handleRunClick(event) {
         selectedRun = event.target;
         selectedRSID.innerHTML = selectedRun.getAttribute('data-rsid');
-        // console.log(selectedRSID);
-
         flashGreenDiv(selectedRSID);
     }
 
@@ -988,7 +952,6 @@ document.addEventListener('DOMContentLoaded', function() {
         reconstructedDocument.querySelectorAll('.run').forEach(run => {
             run.addEventListener('mouseover', function (e) {
                 let rsid = getRSID(e);
-                // console.log("RSID HOVER\n", rsid)
                 let query = getAllWithRSID(rsid);
                 query.forEach(run => {
                     run.style.border = '1px solid red';
@@ -1003,375 +966,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             run.addEventListener('click', handleRunClick);
         });
-    }
-
-    // Helper: Extract metric data from document results
-    function extractMetricData(filename, metric) {
-        if (documentResults.hasOwnProperty(filename)) {
-            return { [filename]: documentResults[filename].metrics[metric] };
-        }
-        return {};
-    }
-
-    // Helper: Extract two specific statistics values from all documents
-    function getStatisticsXY(statKey1, statKey2) {
-        const result = {};
-
-        // Find the statistics array in metricsDictionary
-        const statisticsArray = metricsDictionary.statistics;
-        if (!statisticsArray) {
-            console.log("No statistics found in metricsDictionary");
-            return result;
-        }
-
-        // Iterate through each statistics object
-        statisticsArray.forEach(statObj => {
-            const filename = Object.keys(statObj)[0];
-            const stats = statObj[filename];
-
-            if (stats && stats[statKey1] !== undefined && stats[statKey2] !== undefined) {
-                result[filename] = [stats[statKey1], stats[statKey2]];
-            }
-        });
-
-        console.log("getStatisticsXY result:", result);
-        return result;
-    }
-
-    // Helper: Extract a single statistics value from all documents (for count-based plotting)
-    function getStatisticsX(statKey) {
-        const result = [];
-
-        // Find the statistics array in metricsDictionary
-        const statisticsArray = metricsDictionary.statistics;
-        if (!statisticsArray) {
-            console.log("No statistics found in metricsDictionary");
-            return result;
-        }
-
-        // Iterate through each statistics object
-        statisticsArray.forEach(statObj => {
-            const filename = Object.keys(statObj)[0];
-            const stats = statObj[filename];
-
-            if (stats && stats[statKey] !== undefined) {
-                result.push({ [filename]: stats[statKey] });
-            }
-        });
-
-        console.log("getStatisticsX result:", result);
-        return result;
-    }
-
-    // Helper: Calculate mean and standard deviation
-    function calculateStats(values) {
-        if (values.length === 0) {
-            return { mean: 0, stdDev: 0 };
-        }
-        if (values.length === 1) {
-            return { mean: values[0], stdDev: 0 };
-        }
-        
-        const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
-        const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
-        const stdDev = Math.sqrt(variance);
-        return { mean, stdDev };
-    }
-
-    // Process raw metric data with optional normalization and ID tagging
-    function processMetricData(metricData, normalised = false, count = false) {
-        let roundedData = metricData.map(item => {
-            const key = Object.keys(item)[0];
-            const value = item[key];
-            return { [key]: Math.round(value) };
-        });
-
-        if (normalised) {
-            const values = roundedData.map(item => Object.values(item)[0]);
-            const { mean, stdDev } = calculateStats(values);
-            
-            // Skip normalization if standard deviation is 0 (single data point)
-            if (stdDev === 0) {
-                console.log('Skipping normalization for single data point');
-            } else {
-                roundedData = roundedData.map(item => {
-                    const key = Object.keys(item)[0];
-                    const z = (item[key] - mean) / stdDev;
-                    return { [key]: Math.round(z * 100) / 100 };
-                });
-            }
-        }
-
-        if (count) {
-            const valueCount = {};
-            const idTracker = {};
-            roundedData.forEach(item => {
-                const key = Object.keys(item)[0];
-                const val = item[key];
-                valueCount[val] = (valueCount[val] || 0) + 1;
-            });
-
-            roundedData = roundedData.map(item => {
-                const key = Object.keys(item)[0];
-                const val = item[key];
-                idTracker[val] = (idTracker[val] || 1);
-                const newItem = { [key]: [idTracker[val], val] };
-                idTracker[val]++;
-                return newItem;
-            });
-        }
-
-        return roundedData;
-    }
-
-    // Draw a scatter plot (optionally with a normal curve)
-    function createScatterPlot(dataPoints, isNormalised = false, metricLabel = '', xAxisLabel = 'Value', yAxisLabel = 'ID Count') {
-        const chartWrapper = document.createElement('div');
-        chartWrapper.className = 'chart-wrapper';
-
-        const canvas = document.createElement('canvas');
-        canvas.className = 'chart-canvas';
-        chartWrapper.appendChild(canvas);
-        graphContainer.appendChild(chartWrapper);
-
-        const chartData = dataPoints.map(item => {
-            const key = Object.keys(item)[0];
-            const [id, value] = item[key];
-            return { x: value, y: id };
-        });
-
-        const maxY = Math.max(...chartData.map(p => p.y));
-        const yAxisMax = maxY * 2;
-
-        const datasets = [{
-            label: 'Data Points',
-            data: chartData,
-            backgroundColor: 'rgba(255, 0, 0, 1)',
-            borderColor: 'rgba(0, 0, 0, 1)',
-            pointStyle: 'circle',
-            pointRadius: 5,
-            pointHoverRadius: 7,
-            order: 1  // Higher order = appears on top
-        }];
-
-        if (isNormalised) {
-            const xVals = chartData.map(p => p.x);
-            const { mean, stdDev } = calculateStats(xVals);
-            
-            // Skip normal distribution for single data point (stdDev = 0)
-            if (stdDev === 0) {
-                console.log('Skipping normal distribution for single data point');
-            } else {
-                const minX = Math.min(...xVals);
-                const maxX = Math.max(...xVals);
-                const peakY = 1 / (stdDev * Math.sqrt(2 * Math.PI));
-                const scaleFactor = maxY / peakY;
-
-                // Create multiple datasets for different standard deviation ranges
-                const stdDevRanges = [
-                    { range: 3, color: 'rgba(255, 100, 0, 0.2)', label: '±3σ' },
-                    { range: 2, color: 'rgba(255, 180, 0, 0.4)', label: '±2σ' },
-                    { range: 1, color: 'rgba(255, 255, 0, 0.5)', label: '±1σ' }
-                ];
-
-                // Add filled areas for each standard deviation range (layered effect)
-                stdDevRanges.forEach(({ range, color, label }) => {
-                    const fillCurve = [];
-                    const startX = mean - (range * stdDev);
-                    const endX = mean + (range * stdDev);
-
-                    // Generate curve points for this range
-                    for (let x = startX; x <= endX; x += (endX - startX) / 50) {
-                        const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
-                            Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2)) * scaleFactor;
-                        fillCurve.push({ x, y });
-                    }
-
-                    datasets.unshift({
-                        label: label,
-                        data: fillCurve,
-                        type: 'line',
-                        borderColor: color.replace(/[\d.]+\)$/, '0.8)'),
-                        backgroundColor: color,
-                        borderWidth: 1,
-                        fill: true,
-                        pointRadius: 0,
-                        tension: 0.4,
-                        order: 3  // Lower order = appears behind
-                    });
-                });
-
-                // Add the main normal distribution curve on top of fills but behind points
-                const curve = [];
-                for (let x = minX; x <= maxX; x += (maxX - minX) / 50) {
-                    const y = (1 / (stdDev * Math.sqrt(2 * Math.PI))) *
-                        Math.exp(-0.5 * Math.pow((x - mean) / stdDev, 2)) * scaleFactor;
-                    curve.push({ x, y });
-                }
-
-                datasets.unshift({
-                    label: 'Normal Distribution',
-                    data: curve,
-                    type: 'line',
-                    borderColor: 'rgba(0, 0, 255, 0.8)',
-                    borderWidth: 2,
-                    fill: false,
-                    pointRadius: 0,
-                    tension: 0.4,
-                    order: 2  // Between fills and points
-                });
-            }
-        }
-
-        new Chart(canvas, {
-            type: 'scatter',
-            data: { datasets },
-            options: {
-                responsive: true,
-                maintainAspectRatio: true,
-                aspectRatio: 2,
-                plugins: {
-                    title: {
-                        display: true,
-                        text: isNormalised ? `Normalised ${metricLabel}` : metricLabel,
-                        font: { size: 16, weight: 'bold' },
-                        padding: { top: 10, bottom: 20 }
-                    },
-                    legend: { display: true },
-                    tooltip: {
-                        callbacks: {
-                            title: (ctx) => {
-                                const p = ctx[0].parsed;
-                                return ctx[0].dataset.label === 'Normal Distribution'
-                                    ? `Expected at x = ${p.x.toFixed(2)}`
-                                    : `Data Point: x = ${p.x}, y = ${p.y}`;
-                            },
-                            label: (ctx) => {
-                                if (ctx.dataset.label === 'Normal Distribution') {
-                                    return `Expected Distribution`;
-                                }
-                                // For statistics charts, show filename
-                                const dataPoint = ctx.parsed;
-                                const dataIndex = ctx.dataIndex;
-                                const originalData = dataPoints[dataIndex];
-                                if (originalData) {
-                                    const filename = Object.keys(originalData)[0];
-                                    return `File: ${filename}`;
-                                }
-                                return `Data Point`;
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        beginAtZero: true,
-                        title: { display: true, text: xAxisLabel }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        max: yAxisMax,
-                        title: { display: true, text: yAxisLabel },
-                        ticks: {
-                            precision: 0,
-                            // Remove stepSize to let Chart.js auto-generate appropriate ticks
-                            callback: function (value, index, values) {
-                                // Only show every nth tick to avoid overcrowding
-                                return index % Math.max(1, Math.floor(values.length / 10)) === 0 ? value : '';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    // Create all charts based on the metricsDictionary
-    function createGraphs() {
-        const individual = [
-            'total_characters_count',
-            'total_word_count',
-            'total_paragraph_count',
-            'total_runs_count',
-            'unique_rsid_count'
-        ]
-        const pair = [
-            ['total_characters_count', 'total_runs_count'],
-            ['total_characters_count', 'unique_rsid_count'],
-            ['total_word_count', 'total_runs_count'],
-            ['total_word_count', 'unique_rsid_count'],
-            ['total_paragraph_count', 'total_runs_count'],
-            ['total_paragraph_count', 'unique_rsid_count'],
-            ['unique_rsid_count', 'total_runs_count']
-        ]
-
-        Object.entries(metricsDictionary).forEach(([metricKey, data]) => {
-            if (metricKey === 'score') {
-                const raw = processMetricData(data, false, true);
-                // const norm = processMetricData(data, true, true);
-                createScatterPlot(raw, true, metricKey);
-                // createScatterPlot(norm, true, metricKey);
-            }
-            if (metricKey === 'total_score') {
-                const raw = processMetricData(data, false, true);
-                // const norm = processMetricData(data, true, true);
-                createScatterPlot(raw, true, metricKey);
-                // createScatterPlot(norm, true, metricKey);
-            }
-            if (metricKey === 'statistics') {
-
-                // Create individual statistics charts (X vs Count)
-                individual.forEach(statKey => {
-                    const statData = getStatisticsX(statKey);
-                    if (statData.length > 0) {
-                        const processedData = processMetricData(statData, false, true);
-                        const processedDataNormalised = processMetricData(statData, true, true);
-                        const chartTitle = `${statKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} Distribution`;
-                        const xAxisLabel = statKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                        createScatterPlot(processedData, true, chartTitle, xAxisLabel, 'Count');
-                        createScatterPlot(processedDataNormalised, true, chartTitle, xAxisLabel, 'Count');
-                    }
-                });
-
-                // Create XY pair charts
-                pair.forEach(([statKey1, statKey2]) => {
-                    const pairData = getStatisticsXY(statKey1, statKey2);
-                    if (Object.keys(pairData).length > 0) {
-                        const data = Object.entries(pairData).map(([filename, [val1, val2]]) => {
-                            return { [filename]: [val1, val2] };
-                        });
-                        const chartTitle = `${statKey1.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())} vs ${statKey2.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}`;
-                        const xAxisLabel = statKey1.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                        const yAxisLabel = statKey2.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-                        // createScatterPlot(data, false, chartTitle, xAxisLabel, yAxisLabel);
-                        createScatterPlot(data, true, chartTitle, xAxisLabel, yAxisLabel);
-                    }
-                });
-
-                console.log("found statistics");
-            }
-        });
-
-
-    }
-
-    // Build metrics dictionary from documentResults
-    function generateMetricsDictionary() {
-        console.trace("Call stack for generateMetricsDictionary:");
-        Object.entries(documentResults).forEach(([filename, fileData]) => {
-            if (fileData.metrics) {
-                Object.entries(fileData.metrics).forEach(([metricKey, metricValue]) => {
-                    const extracted = extractMetricData(filename, metricKey);
-                    if (!metricsDictionary[metricKey]) {
-                        metricsDictionary[metricKey] = [];
-                    }
-                    metricsDictionary[metricKey].push(extracted);
-                });
-            }
-        });
-        console.log("metricsDictioary:", metricsDictionary);
-
-        createGraphs();
     }
 
     function sortTable(tbody, columnIndex, type, asc = true) {
