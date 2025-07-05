@@ -4,13 +4,11 @@ from datetime import datetime, timedelta
 
 # Create your tests here.
 
-class DOCXStatisticsTests(TestCase):
-
+class DOCXStatisticsPerDocumentRulesTests(TestCase):
     def setUp(self):
         """Set up common base data for tests."""
         self.base_paragraphs = []
         self.base_settings_rsids = {'rsids': [{'value': '001'}, {'value': '002'}]}
-        
         # Mock metadata for a "clean" document
         self.clean_metadata = {
             'docx_core_properties': {
@@ -34,10 +32,8 @@ class DOCXStatisticsTests(TestCase):
         """Test the 'different author and last_modified_by' rule."""
         metadata = self.clean_metadata.copy()
         metadata['docx_core_properties']['last_modified_by'] = 'Different Person'
-        
         stats = DOCXStatistics(self.base_paragraphs, metadata, self.base_settings_rsids)
         result = stats.calculate_suspicion_score()
-        
         self.assertIn("Author and Last Modified By are different.", result['factors'])
         self.assertGreater(result['score'], 0)
 
@@ -46,10 +42,8 @@ class DOCXStatisticsTests(TestCase):
         metadata = self.clean_metadata.copy()
         # Set modified time to be one day before created time
         metadata['docx_core_properties']['modified'] = metadata['docx_core_properties']['created'] - timedelta(days=1)
-        
         stats = DOCXStatistics(self.base_paragraphs, metadata, self.base_settings_rsids)
         result = stats.calculate_suspicion_score()
-        
         self.assertIn("Document was last modified before it was created.", result['factors'])
         self.assertGreater(result['score'], 0)
 
@@ -63,10 +57,8 @@ class DOCXStatisticsTests(TestCase):
             },
             'core_properties': {}
         }
-        
         stats = DOCXStatistics(self.base_paragraphs, metadata, self.base_settings_rsids)
         result = stats.calculate_suspicion_score()
-        
         self.assertIn("Missing key metadata: Author, Last Modified By, Revision.", result['factors'][0])
         self.assertGreater(result['score'], 0)
 
@@ -74,10 +66,8 @@ class DOCXStatisticsTests(TestCase):
         """Test that missing just one piece of metadata is detected."""
         metadata = self.clean_metadata.copy()
         del metadata['docx_core_properties']['revision']
-        
         stats = DOCXStatistics(self.base_paragraphs, metadata, self.base_settings_rsids)
         result = stats.calculate_suspicion_score()
-        
         self.assertIn("Missing key metadata: Revision.", result['factors'][0])
         self.assertGreater(result['score'], 0)
 
@@ -90,12 +80,9 @@ class DOCXStatisticsTests(TestCase):
             {'runs': [{'text': 'This is a very long run designed to be an outlier.' * 10}]}, # 1 long run (500 chars)
             {'runs': [{'text': 'Another short run.'}]} # 1 more short run
         ]
-        
         # Use clean metadata so only this rule is triggered
         stats = DOCXStatistics(paragraphs_with_outlier, self.clean_metadata, self.base_settings_rsids)
         result = stats.calculate_suspicion_score()
-        
-        # Check that the specific factor for this rule was added
         self.assertTrue(any("unusually long text run(s) detected" in factor for factor in result['factors']))
         self.assertGreater(result['score'], 0)
 
@@ -106,9 +93,32 @@ class DOCXStatisticsTests(TestCase):
         paragraphs_consistent = [
             {'runs': [{'text': 'A long but consistent run.' * 5}] * 20} # 20 long runs
         ]
-        
         stats = DOCXStatistics(paragraphs_consistent, self.clean_metadata, self.base_settings_rsids)
         result = stats.calculate_suspicion_score()
-
-        # Check that the outlier factor was NOT added
         self.assertFalse(any("unusually long text run(s) detected" in factor for factor in result['factors']))
+
+    def test_writing_speed_rule(self):
+        """Test the 'suspicious writing speed' rule (>200 WPM)."""
+        # 1000 words in 2 minutes = 500 WPM (should be flagged)
+        paragraphs = [
+            {'runs': [{'text': 'word ' * 1000, 'rsid': '001'}]}
+        ]
+        metadata = self.clean_metadata.copy()
+        metadata['docx_core_properties']['created'] = datetime(2023, 1, 1, 10, 0, 0)
+        metadata['docx_core_properties']['modified'] = datetime(2023, 1, 1, 10, 2, 0)
+        stats = DOCXStatistics(paragraphs, metadata, self.base_settings_rsids)
+        result = stats.calculate_suspicion_score()
+        self.assertTrue(any('Suspicious writing speed' in f for f in result['factors']))
+        self.assertGreater(result['score'], 0)
+
+    def test_rsid_density_per_document_rule(self):
+        """Test the 'suspicious RSID density' rule (words per unique RSID > 500)."""
+        # 1000 words, 1 RSID, should be flagged for high words/RSID
+        paragraphs = [
+            {'runs': [{'text': 'word ' * 1000, 'rsid': '001'}]}
+        ]
+        stats = DOCXStatistics(paragraphs, self.clean_metadata, {'rsids': [{'value': '001'}]})
+        result = stats.calculate_suspicion_score()
+        self.assertTrue(any('Suspicious RSID density' in f for f in result['factors']))
+        self.assertGreater(result['score'], 0)
+
