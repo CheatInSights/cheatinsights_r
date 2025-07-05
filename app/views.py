@@ -194,6 +194,16 @@ def handle_multiple_uploads(request):
             for doc_name, result in results.items():
                 result['metrics']['score'] = round((result['metrics']['total_score'] / max_possible_score) * 100, 2)
 
+            # Debug: Print final data structure being sent to frontend
+            print("\n========== DEBUG: FINAL DATA BEING SENT TO FRONTEND ==========")
+            for doc_name, result in results.items():
+                print(f"\nDocument: {doc_name}")
+                print(f"  Total Score: {result['metrics']['total_score']}")
+                print(f"  Normalized Score: {result['metrics']['score']}%")
+                print(f"  Factors: {result['metrics']['factors']}")
+                print(f"  Max Possible Score: {max_possible_score}")
+                print(f"  Calculation: {result['metrics']['total_score']} / {max_possible_score} * 100 = {result['metrics']['score']}%")
+
             # Return results for all files, and shared RSIDs
             return JsonResponse({
                 'message': f'Successfully processed {len(files)} files',

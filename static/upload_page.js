@@ -764,6 +764,15 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function displaySuspicionScore(suspicionScoreData) {
+        // Debug: Log the suspicion score data being displayed
+        console.log("========== DEBUG: DISPLAYING SUSPICION SCORE ==========");
+        console.log("Suspicion score data received:", suspicionScoreData);
+        if (suspicionScoreData) {
+            console.log(`  Total Score: ${suspicionScoreData.total_score}`);
+            console.log(`  Normalized Score: ${suspicionScoreData.score}%`);
+            console.log(`  Factors:`, suspicionScoreData.factors);
+        }
+        
         const section = document.getElementById('suspicionScoreSection');
         const content = document.getElementById('suspicionScoreContent');
         content.innerHTML = '';
@@ -788,6 +797,12 @@ document.addEventListener('DOMContentLoaded', function() {
         html += `<div class="main-score">Suspicion Score: <span class="score-value">${suspicionScoreData.score}%</span></div>`;
         html += `<div class="total-score" style='color: ${colour};'>Raw Score: ${suspicionScoreData.total_score}</div>`;
         html += '</div>';
+
+        // Debug: Log what's being rendered
+        console.log("Rendering suspicion score HTML:");
+        console.log(`  Main score: ${suspicionScoreData.score}%`);
+        console.log(`  Raw score: ${suspicionScoreData.total_score}`);
+        console.log(`  Color: ${colour}`);
 
         // Factors that contributed to the score
         if (suspicionScoreData.factors && suspicionScoreData.factors.length > 0) {
@@ -826,7 +841,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Store the response globally so other functions can access it
         globalResponse = response;
 
+        // Debug: Log the complete response structure
+        console.log("========== DEBUG: FRONTEND RECEIVED DATA ==========");
+        console.log("Complete response:", response);
+        
         if (response.results) {
+            console.log("\n========== DEBUG: MULTIPLE FILE RESULTS ==========");
+            Object.keys(response.results).forEach(filename => {
+                const result = response.results[filename];
+                console.log(`\nDocument: ${filename}`);
+                console.log(`  Total Score: ${result.metrics.total_score}`);
+                console.log(`  Normalized Score: ${result.metrics.score}%`);
+                console.log(`  Factors:`, result.metrics.factors);
+                console.log(`  Complete metrics object:`, result.metrics);
+            });
+            
             documentResults = response.results;
             // console.log(documentResults);
             createDocumentTabs();
@@ -837,6 +866,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 displayDocument(firstFileName);
             }
         } else if (response.metrics) {
+            console.log("\n========== DEBUG: SINGLE FILE RESULT ==========");
+            console.log(`Total Score: ${response.metrics.total_score}`);
+            console.log(`Normalized Score: ${response.metrics.score}%`);
+            console.log(`Factors:`, response.metrics.factors);
+            console.log(`Complete metrics object:`, response.metrics);
+            
             // Single file upload - set up documentResults for consistency
             const fileName = selectedFiles[0].name;
             documentResults = {
